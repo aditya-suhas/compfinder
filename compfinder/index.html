@@ -369,6 +369,8 @@ tr.row-skipped td { opacity: 0.38; }
 }
 .notes-text { color: var(--text2); font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
 .elig-text  { color: var(--text2); font-size: 13px; line-height: 1.6; }
+.entry-url  { color: var(--accent2); font-size: 12px; font-family: var(--font-mono); text-decoration: none; word-break: break-all; }
+.entry-url:hover { text-decoration: underline; }
 
 /* Checklist */
 .checklist { list-style: none; }
@@ -692,6 +694,10 @@ tr.row-skipped td { opacity: 0.38; }
       <div class="form-group span2">
         <label>Eligibility</label>
         <input type="text" id="f-eligibility" placeholder="e.g. Under 19, India">
+      </div>
+      <div class="form-group span2">
+        <label>Website / URL</label>
+        <input type="url" id="f-url" placeholder="e.g. https://johnlockeessay.com">
       </div>
       <div class="form-group span2">
         <label>Notes</label>
@@ -1140,6 +1146,7 @@ function renderTable() {
       rows.push(`<tr class="expand-row"><td colspan="6"><div class="expand-inner">
         ${e.notes ? `<div class="expand-section" style="flex:2"><h4>Notes</h4><div class="notes-text">${esc(e.notes)}</div></div>` : ''}
         ${e.eligibility ? `<div class="expand-section"><h4>Eligibility</h4><div class="elig-text">${esc(e.eligibility)}</div></div>` : ''}
+        ${e.url ? `<div class="expand-section"><h4>Website</h4><a href="${esc(e.url)}" target="_blank" rel="noopener" class="entry-url">${esc(e.url.replace(/^https?:\/\/(www\.)?/,''))}</a></div>` : ''}
         <div class="expand-section">
           <h4>Prep Checklist${cl.length?` <span style="color:var(--text3);font-weight:400">(${clDone}/${cl.length})</span>`:''}</h4>
           <ul class="checklist">
@@ -1269,7 +1276,7 @@ function populateCategorySelect(selected) {
 function openAddModal() {
   editingId = null;
   document.getElementById('modal-title').textContent = 'Add Entry';
-  ['f-name','f-pipeline','f-deadline','f-deadline-label','f-eligibility','f-notes'].forEach(id => document.getElementById(id).value = '');
+  ['f-name','f-pipeline','f-deadline','f-deadline-label','f-eligibility','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-type').value = '';
   document.getElementById('f-priority').value = 'Medium';
   document.getElementById('f-status').value = 'Contemplating';
@@ -1289,6 +1296,7 @@ function openEditModal(id) {
   document.getElementById('f-deadline-label').value = e.deadlineLabel || '';
   document.getElementById('f-status').value = e.status || 'Contemplating';
   document.getElementById('f-eligibility').value = e.eligibility || '';
+  document.getElementById('f-url').value = e.url || '';
   document.getElementById('f-notes').value = e.notes || '';
   populateCategorySelect(e.category || '');
   document.getElementById('entry-modal').style.display = 'flex';
@@ -1311,6 +1319,7 @@ document.getElementById('modal-save').addEventListener('click', () => {
     deadlineLabel: document.getElementById('f-deadline-label').value.trim(),
     status: document.getElementById('f-status').value,
     eligibility: document.getElementById('f-eligibility').value.trim(),
+    url: document.getElementById('f-url').value.trim(),
     notes: document.getElementById('f-notes').value.trim(),
   };
   if (editingId) {
