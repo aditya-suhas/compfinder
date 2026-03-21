@@ -557,24 +557,6 @@ tr.row-skipped td { opacity: 0.38; }
 .ai-paste-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .ai-paste-area::placeholder { color: var(--text3); font-family: var(--font-ui); font-size: 12px; }
 
-/* ── FILE SYNC ──────────────────────────────────────────────────────────────── */
-#sync-indicator {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 11px; border-radius: var(--radius);
-  font-size: 12px; font-family: var(--font-mono);
-  border: 1px solid var(--border); background: var(--bg3);
-  white-space: nowrap;
-}
-#sync-indicator .sync-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-}
-#sync-indicator.linked { border-color: rgba(46,213,115,0.3); background: var(--green-bg); color: var(--green); }
-#sync-indicator.linked .sync-dot { background: var(--green); box-shadow: 0 0 5px rgba(46,213,115,0.6); }
-#sync-indicator.error  { border-color: rgba(255,71,87,0.3); background: var(--red-bg); color: var(--red); }
-#sync-indicator.error  .sync-dot { background: var(--red); }
-#sync-indicator .sync-unlink { background: none; border: none; color: inherit; opacity: 0.55; cursor: pointer; padding: 0 0 0 4px; font-size: 13px; line-height: 1; }
-#sync-indicator .sync-unlink:hover { opacity: 1; }
-
 /* ── SCROLLBAR ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -601,8 +583,6 @@ tr.row-skipped td { opacity: 0.38; }
       <input type="text" id="search" placeholder="Search&#8230;">
     </div>
     <div class="header-actions">
-      <div id="sync-indicator" style="display:none"></div>
-      <button class="btn" id="btn-sync-link" style="display:none" title="Link a local file — app will auto-save to it and restore from it if browser storage is cleared">&#128279; Link File</button>
       <button class="btn" id="btn-export">&#8659; Export</button>
       <button class="btn" id="btn-import">&#8657; Import</button>
       <button class="btn btn-primary" id="btn-ai-import">&#9889; AI Import</button>
@@ -885,7 +865,11 @@ function loadEntries() {
   save(data);
   return data;
 }
-function save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function save(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  // IDB backup: survives "Clear cookies & site data" (localStorage gets wiped; IDB does not)
+  idbSet(IDB_DATA_KEY, JSON.stringify({ entries: data, categories }));
+}
 
 function loadCategories() {
   try {
@@ -895,7 +879,10 @@ function loadCategories() {
   saveCats([...DEFAULT_CATS]);
   return [...DEFAULT_CATS];
 }
-function saveCats(cats) { localStorage.setItem(CATS_KEY, JSON.stringify(cats)); }
+function saveCats(cats) {
+  localStorage.setItem(CATS_KEY, JSON.stringify(cats));
+  idbSet(IDB_DATA_KEY, JSON.stringify({ entries, categories: cats }));
+}
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let entries          = loadEntries();
@@ -1664,19 +1651,16 @@ RULES:
 - Do NOT include any text outside the JSON code block${listSection}Research each item above and return the JSON array. Include all the competitions listed.`;
 }
 
-// ── FILE SYNC (File System Access API + IndexedDB) ────────────────────────────
-// Data is saved to localStorage on every change (fast).
-// If a file is linked, it's ALSO written to disk on every save.
-// If localStorage is ever cleared, the app restores from the linked file on startup.
+// ── INDEXED DB BACKUP ─────────────────────────────────────────────────────────
+// Every save writes to both localStorage AND IndexedDB.
+// localStorage is fast; IDB is the resilient copy that survives
+// "Clear cookies & site data" (which wipes localStorage but not IDB).
+// On startup, if localStorage is empty, data is auto-restored from IDB.
 
-const IDB_NAME  = 'compfinder_idb';
-const IDB_STORE = 'handles';
-const IDB_HANDLE_KEY = 'save_file';
-const FILE_SYNC_SUPPORTED = 'showSaveFilePicker' in window;
+const IDB_NAME     = 'compfinder_idb';
+const IDB_STORE    = 'handles';
+const IDB_DATA_KEY = 'data';
 
-let linkedFileHandle = null;
-
-// ── IndexedDB helpers ─────────────────────────────────────────────────────────
 function idbOpen() {
   return new Promise((res, rej) => {
     const req = indexedDB.open(IDB_NAME, 1);
@@ -1705,149 +1689,35 @@ async function idbSet(key, val) {
     });
   } catch {}
 }
-async function idbDel(key) {
-  try {
-    const db = await idbOpen();
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).delete(key);
-  } catch {}
-}
 
-// ── Write to linked file ──────────────────────────────────────────────────────
-async function writeToLinkedFile() {
-  if (!linkedFileHandle) return;
-  try {
-    const perm = await linkedFileHandle.queryPermission({ mode: 'readwrite' });
-    if (perm === 'prompt') await linkedFileHandle.requestPermission({ mode: 'readwrite' });
-    if ((await linkedFileHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
-      setLinkedHandle(null); return;
-    }
-    const writable = await linkedFileHandle.createWritable();
-    await writable.write(JSON.stringify({ entries, categories }, null, 2));
-    await writable.close();
-    updateSyncUI('linked', linkedFileHandle.name);
-  } catch(err) {
-    updateSyncUI('error', 'Write failed');
-  }
-}
-
-// ── Read from linked file ─────────────────────────────────────────────────────
-async function readFromLinkedFile(handle) {
-  try {
-    const perm = await handle.queryPermission({ mode: 'read' });
-    if (perm !== 'granted') return null;
-    const file = await handle.getFile();
-    const text = await file.text();
-    return JSON.parse(text);
-  } catch { return null; }
-}
-
-// ── Set / unlink handle ───────────────────────────────────────────────────────
-async function setLinkedHandle(handle) {
-  linkedFileHandle = handle;
-  if (handle) await idbSet(IDB_HANDLE_KEY, handle);
-  else        await idbDel(IDB_HANDLE_KEY);
-  updateSyncUI(handle ? 'linked' : null, handle ? handle.name : null);
-}
-
-function updateSyncUI(state, filename) {
-  const ind  = document.getElementById('sync-indicator');
-  const btn  = document.getElementById('btn-sync-link');
-  if (!FILE_SYNC_SUPPORTED) return;
-  btn.style.display = '';
-  if (!state) {
-    ind.style.display = 'none';
-    btn.textContent = '🔗 Link File';
-    btn.title = 'Link a local .json file — app auto-saves to it and restores from it if browser storage is cleared';
-    return;
-  }
-  ind.style.display = '';
-  ind.className = state;
-  const name = filename ? filename.replace(/^compfinder[-_]?/, '') : '';
-  ind.innerHTML = `<span class="sync-dot"></span>${state === 'linked' ? 'Syncing to ' + esc(name || 'file') : esc(filename || 'Sync error')}<button class="sync-unlink" id="sync-unlink" title="Unlink file">&#10005;</button>`;
-  btn.textContent = '🔗 Change File';
-  document.getElementById('sync-unlink').addEventListener('click', e => {
-    e.stopPropagation();
-    setLinkedHandle(null);
-  });
-}
-
-// ── Link button ───────────────────────────────────────────────────────────────
-document.getElementById('btn-sync-link').addEventListener('click', async () => {
-  if (!FILE_SYNC_SUPPORTED) return;
-  try {
-    const handle = await window.showSaveFilePicker({
-      suggestedName: 'compfinder-data.json',
-      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
-    });
-    await setLinkedHandle(handle);
-    await writeToLinkedFile(); // write current data immediately
-  } catch(e) {
-    if (e.name !== 'AbortError') updateSyncUI('error', 'Could not link file');
-  }
-});
-
-// ── Startup: restore handle from IDB, recover data if localStorage is empty ───
 async function initFileSync() {
-  if (!FILE_SYNC_SUPPORTED) return;
-  updateSyncUI(null); // show the Link File button
-
-  const handle = await idbGet(IDB_HANDLE_KEY);
-  if (!handle) return;
-
-  // Re-request permission (browsers require a user gesture for new sessions,
-  // but queryPermission can reveal 'granted' if the page was just refreshed)
-  const perm = await handle.queryPermission({ mode: 'readwrite' });
-
-  if (perm === 'granted') {
-    linkedFileHandle = handle;
-    updateSyncUI('linked', handle.name);
-
-    // If localStorage is empty (was cleared), restore from file
-    if (!localStorage.getItem(STORAGE_KEY)) {
-      const data = await readFromLinkedFile(handle);
-      if (data) {
-        const restored = Array.isArray(data) ? data : (data.entries || []);
-        restored.forEach(e => {
-          if (STATUS_MIGRATE[e.status]) e.status = STATUS_MIGRATE[e.status];
-          if (!e.type) e.type = 'Competition';
-        });
-        entries = restored;
-        if (!Array.isArray(data) && data.categories) {
-          categories = data.categories;
-          saveCats(categories);
-        }
-        save(entries);
-        renderAll();
-        // Show a brief restore notice in the banner area
-        const bw = document.getElementById('banner-wrap');
-        bw.innerHTML = `<div class="banner" style="border-left-color:var(--green);background:var(--green-bg);border-color:rgba(46,213,115,0.2)">
-          <span class="banner-icon">&#9989;</span>
-          <div class="banner-content">
-            <div class="banner-title" style="color:var(--green)">Data restored from linked file</div>
-            <div class="banner-items"><span class="banner-item" style="border-color:rgba(46,213,115,0.2);background:rgba(46,213,115,0.06)">localStorage was empty &mdash; recovered ${entries.length} entries from <strong>${esc(handle.name)}</strong></span></div>
-          </div>
-          <button class="banner-close" id="restore-dismiss">&#10005;</button>
-        </div>`;
-        document.getElementById('restore-dismiss').addEventListener('click', () => { bw.innerHTML = ''; renderBanner(); });
-      }
-    }
-  } else if (perm === 'prompt') {
-    // Handle exists but needs user gesture to re-grant — show a button
-    linkedFileHandle = handle;
-    updateSyncUI('error', 'Click to re-grant file access');
-    document.getElementById('btn-sync-link').addEventListener('click', async () => {
-      try { await handle.requestPermission({ mode: 'readwrite' }); linkedFileHandle = handle; updateSyncUI('linked', handle.name); }
-      catch {}
-    }, { once: true });
-  }
-}
-
-// ── Hook into save() to also write to file ────────────────────────────────────
-const _origSave = save;
-function save(data) {
-  _origSave(data);
-  if (linkedFileHandle) writeToLinkedFile();
+  if (localStorage.getItem(STORAGE_KEY)) return; // localStorage is fine, nothing to do
+  // localStorage is empty — try to restore from IDB
+  const raw = await idbGet(IDB_DATA_KEY);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    const restored = Array.isArray(data) ? data : (data.entries || []);
+    if (!restored.length) return;
+    restored.forEach(e => {
+      if (STATUS_MIGRATE[e.status]) e.status = STATUS_MIGRATE[e.status];
+      if (!e.type) e.type = 'Competition';
+    });
+    entries = restored;
+    if (!Array.isArray(data) && data.categories) { categories = data.categories; saveCats(categories); }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); // repopulate localStorage
+    renderAll();
+    const bw = document.getElementById('banner-wrap');
+    bw.innerHTML = `<div class="banner" style="border-left-color:var(--green);background:var(--green-bg);border-color:rgba(46,213,115,0.2)">
+      <span class="banner-icon">&#9989;</span>
+      <div class="banner-content">
+        <div class="banner-title" style="color:var(--green)">Data restored from backup</div>
+        <div class="banner-items"><span class="banner-item" style="border-color:rgba(46,213,115,0.2);background:rgba(46,213,115,0.06)">localStorage was cleared &mdash; recovered <strong>${entries.length} entries</strong> from IndexedDB backup</span></div>
+      </div>
+      <button class="banner-close" id="restore-dismiss">&#10005;</button>
+    </div>`;
+    document.getElementById('restore-dismiss').addEventListener('click', () => { bw.innerHTML = ''; renderBanner(); });
+  } catch {}
 }
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
