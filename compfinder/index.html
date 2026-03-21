@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CompFinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #07091a;
+  --bg2:       #0d1228;
+  --bg3:       #131832;
+  --bg4:       #1a2240;
+  --bg5:       #21294e;
+  --border:    #1c2b46;
+  --border2:   #28395e;
+  --border3:   #344d7a;
+  --text:      #dde8f8;
+  --text2:     #5e78a0;
+  --text3:     #36486a;
+  --accent:    #1e8fff;
+  --accent2:   #5ab5ff;
+  --accent-glow: rgba(30,143,255,0.18);
+  --red:       #ff4757;
+  --red-bg:    #1c080f;
+  --amber:     #ffa502;
+  --amber-bg:  #1c1008;
+  --green:     #2ed573;
+  --green-bg:  #081c10;
+  --radius:    7px;
+  --radius-lg: 12px;
+  --font-ui:      'DM Sans', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', 'Fira Mono', ui-monospace, monospace;
+}
+
+/* ── RESET & BASE ───────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(rgba(30,143,255,0.055) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────────────────────── */
+.app { max-width: 1380px; margin: 0 auto; padding: 28px 24px; }
+
+/* ── HEADER ─────────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.header h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.header h1 span {
+  background: linear-gradient(125deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Search */
+.search-wrap { flex: 1; min-width: 170px; max-width: 320px; position: relative; }
+.search-wrap input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 12px 8px 34px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-wrap input::placeholder { color: var(--text3); }
+.search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; font-size: 15px; }
+
+.header-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+
+/* ── BUTTONS ────────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  font-size: 13px; font-family: var(--font-ui); font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg4); border-color: var(--border3); color: var(--text); }
+.btn-primary {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff; font-weight: 600;
+  box-shadow: 0 2px 14px rgba(30,143,255,0.28);
+}
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); box-shadow: 0 2px 20px rgba(30,143,255,0.4); }
+.btn-danger { border-color: var(--red); color: var(--red); background: transparent; }
+.btn-danger:hover { background: var(--red-bg); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-icon { padding: 5px 8px; background: transparent; border-color: transparent; color: var(--text3); }
+.btn-icon:hover { color: var(--text); background: var(--bg3); border-color: var(--border); }
+
+/* ── BANNER ─────────────────────────────────────────────────────────────────── */
+.banner {
+  background: linear-gradient(135deg, var(--red-bg) 0%, rgba(28,8,15,0.5) 100%);
+  border: 1px solid rgba(255,71,87,0.28);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-lg);
+  padding: 13px 16px;
+  margin-bottom: 14px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.banner-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+.banner-content { flex: 1; }
+.banner-title { font-weight: 600; color: var(--red); margin-bottom: 7px; font-size: 12px; font-family: var(--font-mono); letter-spacing: 0.5px; text-transform: uppercase; }
+.banner-items { display: flex; flex-wrap: wrap; gap: 7px; }
+.banner-item {
+  background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.2);
+  border-radius: var(--radius); padding: 3px 10px; font-size: 12px;
+}
+.banner-item strong { color: var(--red); font-family: var(--font-mono); }
+.banner-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 15px; padding: 0; flex-shrink: 0; }
+.banner-close:hover { color: var(--text); }
+
+/* ── TIMELINE ───────────────────────────────────────────────────────────────── */
+#timeline {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 10px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+.tl-col { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 2px; border-radius: 6px; }
+.tl-col.tl-current { background: rgba(30,143,255,0.07); }
+.tl-month {
+  font-family: var(--font-mono);
+  font-size: 9px; font-weight: 600;
+  color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 0 0 6px; text-align: center;
+}
+.tl-col.tl-current .tl-month { color: var(--accent2); }
+.tl-dots { display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 18px; }
+.tl-dot { font-size: 10px; cursor: pointer; transition: transform 0.12s, filter 0.12s; line-height: 1; }
+.tl-dot:hover { transform: scale(1.7); }
+.tl-dot.urg-red   { color: var(--red);   filter: drop-shadow(0 0 5px rgba(255,71,87,0.7)); }
+.tl-dot.urg-amber { color: var(--amber); filter: drop-shadow(0 0 3px rgba(255,165,2,0.4)); }
+.tl-dot.urg-green { color: var(--green); }
+.tl-dot.urg-grey  { color: var(--text3); }
+.tl-dot.tl-past   { opacity: 0.25; cursor: default; filter: none; }
+.tl-dot.tl-past:hover { transform: none; }
+@keyframes row-pulse { 0%,100%{background:transparent} 40%,60%{background:rgba(30,143,255,0.1)} }
+.row-highlight > td { animation: row-pulse 0.55s ease 2; }
+
+/* ── FOCUS PANEL ────────────────────────────────────────────────────────────── */
+#focus-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.focus-header {
+  display: flex; align-items: center; gap: 9px;
+  padding: 11px 16px; cursor: pointer; user-select: none;
+  transition: background 0.12s;
+}
+.focus-header:hover { background: var(--bg3); }
+.focus-chevron { font-size: 10px; color: var(--text3); transition: transform 0.15s; flex-shrink: 0; }
+.focus-chevron.open { transform: rotate(90deg); }
+.focus-title { font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--text); }
+.focus-count { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-left: 2px; }
+.focus-body { padding: 0 16px 16px; }
+.focus-entry { margin-top: 12px; }
+.focus-entry-name {
+  font-size: 12px; font-weight: 600; color: var(--accent2);
+  margin-bottom: 5px; letter-spacing: -0.1px;
+}
+
+/* ── TYPE TABS ──────────────────────────────────────────────────────────────── */
+.type-tabs {
+  display: flex; gap: 2px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.type-tab {
+  padding: 9px 17px;
+  font-size: 13px; font-family: var(--font-ui); font-weight: 500;
+  color: var(--text3); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.type-tab:hover { color: var(--text2); }
+.type-tab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* ── CATEGORY FILTERS ───────────────────────────────────────────────────────── */
+.filter-row { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.6px; text-transform: uppercase; flex-shrink: 0; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.pill {
+  padding: 5px 13px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--text3); font-size: 12px; font-family: var(--font-ui); font-weight: 500;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.pill:hover { border-color: var(--border2); color: var(--text2); background: var(--bg4); }
+.pill.active {
+  background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
+  box-shadow: 0 1px 10px rgba(30,143,255,0.3);
+}
+.manage-cats-btn { flex-shrink: 0; }
+
+/* ── TABLE ──────────────────────────────────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.35);
+}
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--bg2); }
+th {
+  padding: 11px 16px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 1.1px;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text2); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  animation: row-enter 0.2s ease both;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr.expanded { border-bottom: none; }
+tbody tr:hover > td { background: rgba(30,143,255,0.04); }
+
+@keyframes row-enter {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+tbody tr:nth-child(1)  { animation-delay: 0.01s; }
+tbody tr:nth-child(2)  { animation-delay: 0.03s; }
+tbody tr:nth-child(3)  { animation-delay: 0.05s; }
+tbody tr:nth-child(4)  { animation-delay: 0.07s; }
+tbody tr:nth-child(5)  { animation-delay: 0.09s; }
+tbody tr:nth-child(6)  { animation-delay: 0.11s; }
+tbody tr:nth-child(7)  { animation-delay: 0.13s; }
+tbody tr:nth-child(8)  { animation-delay: 0.15s; }
+tbody tr:nth-child(9)  { animation-delay: 0.17s; }
+tbody tr:nth-child(10) { animation-delay: 0.19s; }
+tbody tr:nth-child(11) { animation-delay: 0.21s; }
+tbody tr:nth-child(12) { animation-delay: 0.22s; }
+tbody tr:nth-child(n+13) { animation-delay: 0.23s; }
+
+td { padding: 12px 16px; vertical-align: middle; }
+
+/* Entry name cell */
+.entry-name {
+  font-weight: 600; font-size: 13.5px;
+  display: flex; align-items: center; gap: 7px;
+  cursor: pointer; user-select: none;
+  transition: color 0.12s;
+}
+.entry-name:hover { color: var(--accent2); }
+.expand-arrow { font-size: 9px; color: var(--text3); transition: transform 0.15s; flex-shrink: 0; }
+.expand-arrow.open { transform: rotate(90deg); color: var(--accent2); }
+.pipeline-label {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text3); margin-top: 3px; letter-spacing: 0.2px;
+}
+
+/* Type + Category badges */
+.cat-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 500;
+  background: var(--bg4); color: var(--text2); border: 1px solid var(--border);
+}
+.type-badge {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.7px; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px;
+}
+.type-Competition { background: rgba(30,143,255,0.12); color: var(--accent2); border: 1px solid rgba(30,143,255,0.25); }
+.type-Program     { background: rgba(46,213,115,0.1);  color: var(--green);   border: 1px solid rgba(46,213,115,0.25); }
+.type-Fellowship  { background: rgba(255,165,2,0.1);   color: var(--amber);   border: 1px solid rgba(255,165,2,0.25); }
+.type-Other       { background: var(--bg4);             color: var(--text3);   border: 1px solid var(--border); }
+
+/* Deadline */
+.deadline-cell {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+}
+.deadline-cell.urg-red   { color: var(--red); }
+.deadline-cell.urg-amber { color: var(--amber); }
+.deadline-cell.urg-green { color: var(--green); }
+.deadline-cell.urg-grey  { color: var(--text3); }
+.days-label {
+  font-family: var(--font-mono); font-size: 10px; margin-top: 2px; opacity: 0.85;
+}
+.days-label.urg-red   { color: var(--red); }
+.days-label.urg-amber { color: var(--amber); }
+.days-label.urg-green { color: var(--green); }
+
+/* Priority */
+.pri-badge {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  padding: 3px 9px; border-radius: 4px;
+}
+.pri-High   { background: rgba(255,71,87,0.12);  color: var(--red);   border: 1px solid rgba(255,71,87,0.28); }
+.pri-Medium { background: rgba(255,165,2,0.1);   color: var(--amber); border: 1px solid rgba(255,165,2,0.25); }
+.pri-Low    { background: rgba(46,213,115,0.08); color: var(--green); border: 1px solid rgba(46,213,115,0.22); }
+
+/* Status select */
+.status-select {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius);
+  padding: 5px 9px; font-size: 12px; font-family: var(--font-ui);
+  cursor: pointer; outline: none; width: 100%; max-width: 138px;
+  transition: border-color 0.15s;
+}
+.status-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.status-select option { background: var(--bg2); }
+
+/* Skipped rows */
+tr.row-skipped td { opacity: 0.38; }
+
+/* Expand row */
+.expand-row > td {
+  padding: 0 16px 16px; background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.expand-inner { display: flex; gap: 24px; flex-wrap: wrap; }
+.expand-section { flex: 1; min-width: 180px; }
+.expand-section h4 {
+  font-family: var(--font-mono); font-size: 9px; text-transform: uppercase;
+  letter-spacing: 1.1px; color: var(--text3); margin-bottom: 8px; font-weight: 600;
+}
+.notes-text { color: var(--text2); font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+.elig-text  { color: var(--text2); font-size: 13px; line-height: 1.6; }
+
+/* Checklist */
+.checklist { list-style: none; }
+.checklist li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.checklist input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.checklist label { font-size: 13px; color: var(--text2); cursor: pointer; flex: 1; transition: color 0.12s; }
+.checklist input[type=checkbox]:checked + label { text-decoration: line-through; color: var(--text3); }
+.cl-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px; padding: 0 2px; opacity: 0; transition: opacity 0.12s; }
+.checklist li:hover .cl-del { opacity: 1; }
+.cl-del:hover { color: var(--red); }
+.add-cl-row { display: flex; gap: 6px; margin-top: 9px; }
+.add-cl-row input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text); padding: 6px 10px;
+  font-size: 12px; font-family: var(--font-ui); outline: none; transition: border-color 0.15s;
+}
+.add-cl-row input:focus { border-color: var(--accent); }
+.add-cl-row input::placeholder { color: var(--text3); }
+
+/* ── BOTTOM BAR ─────────────────────────────────────────────────────────────── */
+.bottom-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 18px; padding-top: 14px;
+  border-top: 1px solid var(--border); flex-wrap: wrap; gap: 8px;
+}
+.entry-count { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+
+/* ── EMPTY STATE ────────────────────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 56px 20px; color: var(--text3); }
+.empty-state p { margin-top: 10px; font-size: 13px; }
+
+/* ── MODALS ─────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,7,18,0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(30,143,255,0.06);
+  width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: 26px;
+  animation: modal-enter 0.2s ease;
+}
+@keyframes modal-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.975); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 22px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .span2 { grid-column: span 2; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label {
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.9px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  padding: 9px 11px; font-size: 13px; font-family: var(--font-ui); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color: var(--text3); }
+.form-group textarea { resize: vertical; min-height: 72px; }
+.form-group select option { background: var(--bg2); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+
+.confirm-modal { max-width: 390px; }
+.confirm-modal p { color: var(--text2); font-size: 13px; margin-bottom: 22px; line-height: 1.65; }
+
+/* ── MANAGE CATEGORIES MODAL ────────────────────────────────────────────────── */
+.cat-modal { max-width: 420px; }
+.cat-list { list-style: none; margin-bottom: 14px; max-height: 280px; overflow-y: auto; }
+.cat-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: var(--radius);
+}
+.cat-list li:hover { background: var(--bg3); }
+.cat-list li span { font-size: 13px; color: var(--text); }
+.cat-list li .cat-count { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-left: 8px; }
+.cat-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0 3px; transition: color 0.12s; }
+.cat-del:hover { color: var(--red); }
+.add-cat-row { display: flex; gap: 8px; }
+.add-cat-row input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  padding: 8px 11px; font-size: 13px; font-family: var(--font-ui); outline: none;
+  transition: border-color 0.15s;
+}
+.add-cat-row input:focus { border-color: var(--accent); }
+.add-cat-row input::placeholder { color: var(--text3); }
+
+/* ── IMPORT MODAL ───────────────────────────────────────────────────────────── */
+.import-modal { max-width: 560px; }
+.import-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.import-tab {
+  padding: 8px 16px; font-size: 13px; font-family: var(--font-ui); font-weight: 500;
+  color: var(--text3); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.import-tab:hover { color: var(--text2); }
+.import-tab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 600; }
+.import-tab-panel { display: none; }
+.import-tab-panel.active { display: block; }
+.import-paste-area {
+  width: 100%; min-height: 160px; resize: vertical;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  padding: 10px 12px; font-size: 12px; font-family: var(--font-mono);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s; line-height: 1.6;
+}
+.import-paste-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.import-paste-area::placeholder { color: var(--text3); font-family: var(--font-ui); }
+.import-merge-row {
+  display: flex; align-items: center; gap: 12px; margin-top: 14px;
+  padding: 10px 12px; background: var(--bg3); border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.import-merge-row label { font-size: 12px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.import-merge-row input[type=radio] { accent-color: var(--accent); }
+.import-merge-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.5px; text-transform: uppercase; margin-right: 4px; flex-shrink: 0; }
+.import-validation {
+  margin-top: 14px; padding: 11px 14px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  font-size: 12px; line-height: 1.7;
+}
+.import-validation.ok { background: var(--green-bg); border-color: rgba(46,213,115,0.25); }
+.import-validation.warn { background: var(--amber-bg); border-color: rgba(255,165,2,0.25); }
+.import-validation.err { background: var(--red-bg); border-color: rgba(255,71,87,0.25); }
+.import-validation strong { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3px; }
+.import-validation .ok-color { color: var(--green); }
+.import-validation .warn-color { color: var(--amber); }
+.import-validation .err-color { color: var(--red); }
+.import-validation ul { margin: 6px 0 0 14px; color: var(--text2); }
+.import-file-zone {
+  border: 1.5px dashed var(--border2); border-radius: var(--radius-lg);
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s; background: var(--bg3);
+}
+.import-file-zone:hover { border-color: var(--accent); background: rgba(30,143,255,0.04); }
+.import-file-zone.has-file { border-color: var(--green); background: var(--green-bg); }
+.import-file-icon { font-size: 26px; margin-bottom: 8px; }
+.import-file-label { font-size: 13px; color: var(--text2); }
+.import-file-name { font-family: var(--font-mono); font-size: 11px; color: var(--green); margin-top: 5px; }
+
+/* ── AI PROMPT MODAL ────────────────────────────────────────────────────────── */
+.ai-modal { max-width: 620px; }
+.ai-modal h2 { margin-bottom: 8px; }
+.ai-modal-sub { font-size: 12px; color: var(--text2); margin-bottom: 18px; line-height: 1.65; }
+.ai-list-input {
+  width: 100%; min-height: 110px; resize: vertical;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  padding: 10px 12px; font-size: 13px; font-family: var(--font-ui);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s; line-height: 1.6;
+}
+.ai-list-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.ai-list-input::placeholder { color: var(--text3); }
+.ai-list-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 7px; display: block; }
+.ai-prompt-preview {
+  margin-top: 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  font-size: 11px; font-family: var(--font-mono); color: var(--text3);
+  max-height: 150px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;
+  display: none;
+}
+.ai-copy-success { color: var(--green); font-size: 12px; font-family: var(--font-mono); display: none; margin-left: 8px; }
+.ai-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.ai-paste-section label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 7px; display: block; }
+.ai-paste-area {
+  width: 100%; min-height: 120px; resize: vertical;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  padding: 10px 12px; font-size: 11px; font-family: var(--font-mono);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s; line-height: 1.6;
+}
+.ai-paste-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.ai-paste-area::placeholder { color: var(--text3); font-family: var(--font-ui); font-size: 12px; }
+
+/* ── SCROLLBAR ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border3); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .span2 { grid-column: span 1; }
+  .expand-inner { flex-direction: column; }
+  .app { padding: 18px 14px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Comp<span>Finder</span></h1>
+    <div class="search-wrap">
+      <span class="search-icon">&#9906;</span>
+      <input type="text" id="search" placeholder="Search&#8230;">
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-export">&#8659; Export</button>
+      <button class="btn" id="btn-import">&#8657; Import</button>
+      <button class="btn btn-primary" id="btn-ai-import">&#9889; AI Import</button>
+      <input type="file" id="import-input" accept=".json" style="display:none">
+    </div>
+  </div>
+
+  <!-- Due Soon Banner -->
+  <div id="banner-wrap"></div>
+
+  <!-- Year Timeline -->
+  <div id="timeline"></div>
+
+  <!-- What's Active Panel -->
+  <div id="focus-panel" style="display:none"></div>
+
+  <!-- Type Tabs -->
+  <div class="type-tabs" id="type-tabs"></div>
+
+  <!-- Category Filter Row -->
+  <div class="filter-row">
+    <span class="filter-label">Category</span>
+    <div class="pills" id="cat-pills"></div>
+    <button class="btn btn-sm manage-cats-btn" id="btn-manage-cats">&#9881; Categories</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="name">Competition <span id="sort-name"></span></th>
+          <th>Type / Category</th>
+          <th class="sortable" data-sort="deadline">Deadline <span id="sort-deadline">&#9662;</span></th>
+          <th class="sortable" data-sort="priority">Priority <span id="sort-priority"></span></th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <div style="font-size:36px">&#128269;</div>
+      <p>No entries match your filters.</p>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <span id="entry-count" class="entry-count"></span>
+    <button class="btn btn-primary" id="btn-add">+ Add Entry</button>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div id="entry-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h2 id="modal-title">Add Entry</h2>
+    <div class="form-grid">
+      <div class="form-group span2">
+        <label>Name *</label>
+        <input type="text" id="f-name" placeholder="e.g. John Locke Essay Competition">
+      </div>
+      <div class="form-group span2">
+        <label>Pipeline / Full Track</label>
+        <input type="text" id="f-pipeline" placeholder="e.g. IOQM &#8594; RMO &#8594; IMO">
+      </div>
+      <div class="form-group">
+        <label>Type *</label>
+        <select id="f-type">
+          <option value="">Select&#8230;</option>
+          <option value="Competition">Competition</option>
+          <option value="Program">Program</option>
+          <option value="Fellowship">Fellowship</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="f-category"></select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="f-priority">
+          <option value="High">High</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="Contemplating">Contemplating</option>
+          <option value="Committed">Committed</option>
+          <option value="Doing">Doing</option>
+          <option value="Done">Done</option>
+          <option value="Skipped">Skipped</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deadline Date</label>
+        <input type="date" id="f-deadline">
+      </div>
+      <div class="form-group">
+        <label>Deadline Label</label>
+        <input type="text" id="f-deadline-label" placeholder="e.g. Sep 15 or ~Mar&#8211;Apr">
+      </div>
+      <div class="form-group span2">
+        <label>Eligibility</label>
+        <input type="text" id="f-eligibility" placeholder="e.g. Under 19, India">
+      </div>
+      <div class="form-group span2">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Any notes&#8230;"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">Cancel</button>
+      <button class="btn btn-primary" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div id="confirm-modal" class="modal-overlay" style="display:none">
+  <div class="modal confirm-modal">
+    <h2>Delete Entry</h2>
+    <p id="confirm-msg"></p>
+    <div class="modal-actions">
+      <button class="btn" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div id="import-modal" class="modal-overlay" style="display:none">
+  <div class="modal import-modal">
+    <h2>&#8657; Import Data</h2>
+    <div class="import-tabs">
+      <button class="import-tab active" data-tab="file">From File</button>
+      <button class="import-tab" data-tab="paste">Paste JSON</button>
+    </div>
+
+    <!-- From File Tab -->
+    <div class="import-tab-panel active" id="import-panel-file">
+      <div class="import-file-zone" id="import-file-zone">
+        <div class="import-file-icon">&#128193;</div>
+        <div class="import-file-label">Click to choose a .json file</div>
+        <div class="import-file-name" id="import-file-name" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Paste JSON Tab -->
+    <div class="import-tab-panel" id="import-panel-paste">
+      <textarea class="import-paste-area" id="import-paste-input" placeholder="Paste your JSON here&#8230;&#10;&#10;Accepted formats:&#10;{ &quot;entries&quot;: [...] }&#10;[{ name: &quot;...&quot;, ... }]"></textarea>
+    </div>
+
+    <!-- Merge / Replace -->
+    <div class="import-merge-row">
+      <span class="import-merge-label">Mode</span>
+      <label><input type="radio" name="import-mode" value="replace" checked> Replace all</label>
+      <label><input type="radio" name="import-mode" value="merge"> Merge (add new, keep existing)</label>
+    </div>
+
+    <!-- Validation Result -->
+    <div class="import-validation" id="import-validation" style="display:none"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="import-cancel">Cancel</button>
+      <button class="btn btn-primary" id="import-confirm" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Import Modal -->
+<div id="ai-modal" class="modal-overlay" style="display:none">
+  <div class="modal ai-modal">
+    <h2>&#9889; AI Import</h2>
+    <p class="ai-modal-sub">Generate a prompt to give any LLM (Claude, ChatGPT, Gemini&hellip;). It will search up the competition details and return JSON you can import directly.</p>
+
+    <label class="ai-list-label">Your competition list</label>
+    <textarea class="ai-list-input" id="ai-list-input" placeholder="e.g.&#10;- PRIMES USA&#10;- Regeneron STS&#10;- RSI (Research Science Institute)&#10;- Perimeter Institute Waterloo&#10;- MIT PRIMES&#10;- IOQM track"></textarea>
+
+    <div class="modal-actions" style="margin-top:12px;justify-content:flex-start">
+      <button class="btn btn-primary" id="ai-copy-btn">&#128203; Copy Prompt</button>
+      <span class="ai-copy-success" id="ai-copy-success">&#10003; Copied to clipboard!</span>
+    </div>
+
+    <hr class="ai-divider">
+
+    <div class="ai-paste-section">
+      <label>Paste AI output here</label>
+      <textarea class="ai-paste-area" id="ai-paste-input" placeholder="Paste the JSON the AI gives you here, then click Import below&#8230;"></textarea>
+    </div>
+
+    <div class="import-merge-row" style="margin-top:12px">
+      <span class="import-merge-label">Mode</span>
+      <label><input type="radio" name="ai-import-mode" value="merge" checked> Merge (add new, keep existing)</label>
+      <label><input type="radio" name="ai-import-mode" value="replace"> Replace all</label>
+    </div>
+
+    <div class="import-validation" id="ai-validation" style="display:none"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="ai-cancel">Cancel</button>
+      <button class="btn btn-primary" id="ai-import-btn">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage Categories Modal -->
+<div id="cat-modal" class="modal-overlay" style="display:none">
+  <div class="modal cat-modal">
+    <h2>Manage Categories</h2>
+    <ul class="cat-list" id="cat-list"></ul>
+    <div class="add-cat-row">
+      <input type="text" id="new-cat-input" placeholder="New category name&#8230;">
+      <button class="btn btn-primary btn-sm" id="btn-add-cat">Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="cat-modal-done">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const STORAGE_KEY  = 'compfinder_v1';
+const CATS_KEY     = 'compfinder_cats_v1';
+const FILTERS_KEY  = 'compfinder_filters_v1';
+const FOCUS_KEY    = 'compfinder_focus_v1';
+const STATUSES     = ['Contemplating','Committed','Doing','Done','Skipped'];
+const TYPES        = ['Competition','Program','Fellowship','Other'];
+const DEFAULT_CATS = ['Math','CS/CP','AI','Physics','Astronomy','Writing','Science Communication','Science Research','Research Program','Science Program','Economics','Engineering','Peace/Security','Math/Science','Other'];
+
+// Status migration map for old data
+const STATUS_MIGRATE = { Aware:'Contemplating', Planning:'Contemplating', Registered:'Committed', Applied:'Doing' };
+
+// ── DEFAULT DATA ──────────────────────────────────────────────────────────────
+const DEFAULT_DATA = [
+  { name:'IOQM \u2192 IMO Track',         pipeline:'IOQM \u2192 RMO \u2192 INMO \u2192 IMO', type:'Competition', category:'Math',                 deadline:'2026-09-01', deadlineLabel:'IOQM: Sep',                        notes:'Primary math olympiad track. IOQM in Sep, RMO in Nov, INMO in Jan, IMO prep after.',                              eligibility:'Grade 8\u201312, India',      status:'Contemplating', priority:'High'   },
+  { name:'ZCO/ZIO \u2192 IOI Track',       pipeline:'ZCO/ZIO \u2192 INOI \u2192 IOI',         type:'Competition', category:'CS/CP',                deadline:'2026-11-01', deadlineLabel:'ZCO/ZIO: Nov',                     notes:'Primary CS olympiad track. ZCO (algorithms) or ZIO (informatics) in Nov, INOI in Feb.',                          eligibility:'Grade 8\u201312, India',      status:'Contemplating', priority:'High'   },
+  { name:'INAIO \u2192 IOAI',              pipeline:'INAIO \u2192 IOAI',                       type:'Competition', category:'AI',                   deadline:null,         deadlineLabel:'Annual, check ACM India',          notes:'Side AI track. Check ACM India website for schedule.',                                                           eligibility:'School students, India',      status:'Contemplating', priority:'Medium' },
+  { name:'NSEP \u2192 IPhO Track',         pipeline:'NSEP \u2192 INPhO \u2192 IPhO',           type:'Competition', category:'Physics',              deadline:'2026-11-01', deadlineLabel:'NSEP: Nov',                        notes:'Doable alongside JEE prep. NSEP in Nov, INPhO in Jan, IPhO in summer.',                                          eligibility:'Grade 10\u201312, India',     status:'Contemplating', priority:'Medium' },
+  { name:'NSEA \u2192 IOAA Track',         pipeline:'NSEA \u2192 INAO \u2192 IOAA',            type:'Competition', category:'Astronomy',            deadline:'2026-11-01', deadlineLabel:'NSEA: Nov',                        notes:'Fits aerospace interest. NSEA in Nov, INAO follows, IOAA in summer.',                                            eligibility:'Grade 10\u201312, India',     status:'Contemplating', priority:'Medium' },
+  { name:'John Locke Essay Competition',   pipeline:'',                                        type:'Competition', category:'Writing',              deadline:'2026-03-31', deadlineLabel:'Registration: Mar 31, Essay: May 31', notes:'Philosophy, IR, History, Economics. Under 19, global prestige. Essay due May 31.',                           eligibility:'Under 19, global',            status:'Contemplating', priority:'High'   },
+  { name:'Breakthrough Junior Challenge',  pipeline:'',                                        type:'Competition', category:'Science Communication', deadline:'2026-09-15', deadlineLabel:'Sep 15',                          notes:'3-minute science video. Ages 13\u201318. $250K prize.',                                                          eligibility:'Ages 13\u201318, global',     status:'Contemplating', priority:'High'   },
+  { name:'Regeneron ISEF',                 pipeline:'INSEF \u2192 ISEF',                       type:'Competition', category:'Science Research',     deadline:null,         deadlineLabel:'Qualify via INSEF first',          notes:'1-year pipeline. Original research project, qualify via India\'s national science fair. High ceiling.',           eligibility:'Grade 9\u201312, global',     status:'Contemplating', priority:'High'   },
+  { name:'Plaksha Young Technology Scholars', pipeline:'',                                     type:'Program',     category:'Research Program',     deadline:null,         deadlineLabel:'~Mar\u2013Apr',                    notes:'India-based, interdisciplinary research program. Check Plaksha University website for exact dates.',              eligibility:'School students, India',      status:'Contemplating', priority:'Medium' },
+  { name:'IISER Summer Outreach',          pipeline:'',                                        type:'Program',     category:'Science Program',      deadline:null,         deadlineLabel:'~Apr',                             notes:'Multiple IISERs run outreach programs. Hands-on science. Check each IISER website.',                               eligibility:'School students, India',      status:'Contemplating', priority:'Medium' },
+  { name:'CMI STEMS',                      pipeline:'',                                        type:'Program',     category:'Math/Science',         deadline:'2026-12-01', deadlineLabel:'~Dec',                             notes:'Chennai Mathematical Institute. Online exam leads to residential camp.',                                          eligibility:'Grade 9\u201312, India',      status:'Contemplating', priority:'Medium' },
+  { name:'Harvard Political Review Essay', pipeline:'',                                        type:'Competition', category:'Writing',              deadline:null,         deadlineLabel:'Check annually',                   notes:'Geopolitics/IR focus. International HS students. Check HPR website each year.',                                   eligibility:'HS students, global',         status:'Contemplating', priority:'Medium' },
+  { name:'F1 in Schools',                  pipeline:'',                                        type:'Competition', category:'Engineering',          deadline:'2026-09-01', deadlineLabel:'World Finals: Sep',                notes:'Teams of 3\u20136, ages 9\u201319. Design and race miniature F1 cars. Qualify via national/regional rounds.',      eligibility:'Ages 9\u201319, global (teams)', status:'Contemplating', priority:'Low'  },
+  { name:'Foyle Young Poets Award',        pipeline:'',                                        type:'Competition', category:'Writing',              deadline:'2026-07-31', deadlineLabel:'Jul 31',                           notes:'UK Poetry Society. Ages 11\u201317. Submit up to 3 poems. Global competition.',                                   eligibility:'Ages 11\u201317, global',     status:'Contemplating', priority:'Medium' },
+  { name:'Royal Economic Society Young Economist', pipeline:'',                                type:'Competition', category:'Economics',            deadline:null,         deadlineLabel:'~Jun',                             notes:'Economics essay competition for global HS students. Check RES website for exact dates.',                           eligibility:'HS students, global',         status:'Contemplating', priority:'Medium' },
+  { name:'Geneva Centre GCSP Prize',       pipeline:'',                                        type:'Competition', category:'Peace/Security',       deadline:'2026-03-20', deadlineLabel:'~Mar 20',                          notes:'Peace and security essay. Geopolitics/defense focus. Check GCSP website for current cycle.',                      eligibility:'HS/University, global',       status:'Contemplating', priority:'Medium' },
+];
+
+// ── STORE ─────────────────────────────────────────────────────────────────────
+function loadEntries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      data.forEach(e => {
+        if (STATUS_MIGRATE[e.status]) e.status = STATUS_MIGRATE[e.status];
+        if (!e.type) e.type = 'Competition';
+      });
+      return data;
+    }
+  } catch(e) {}
+  const data = DEFAULT_DATA.map(d => ({ ...d, id: uid(), checklist: [] }));
+  save(data);
+  return data;
+}
+function save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function loadCategories() {
+  try {
+    const raw = localStorage.getItem(CATS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  saveCats([...DEFAULT_CATS]);
+  return [...DEFAULT_CATS];
+}
+function saveCats(cats) { localStorage.setItem(CATS_KEY, JSON.stringify(cats)); }
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let entries          = loadEntries();
+let categories       = loadCategories();
+let activeType       = '__all__';
+let activeCats       = new Set(['__all__']);
+let searchText       = '';
+let sortKey          = 'deadline';
+let sortDir          = 1;
+let expandedIds      = new Set();
+let bannerDismissed  = false;
+let editingId        = null;
+let deletingId       = null;
+let focusPanelCollapsed = (localStorage.getItem(FOCUS_KEY) === '1');
+
+const PRI = { High: 0, Medium: 1, Low: 2 };
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function daysUntil(d) {
+  if (!d) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const t = new Date(d); t.setHours(0,0,0,0);
+  return Math.ceil((t - now) / 86400000);
+}
+function urgClass(d) {
+  const n = daysUntil(d);
+  if (n === null) return 'urg-grey';
+  if (n <= 30) return 'urg-red';
+  if (n <= 90) return 'urg-amber';
+  return 'urg-green';
+}
+function daysLabel(d) {
+  const n = daysUntil(d);
+  if (n === null) return '';
+  if (n < 0) return Math.abs(n) + 'd ago';
+  if (n === 0) return 'Today';
+  if (n === 1) return '1 day left';
+  return n + 'd left';
+}
+function fmtDeadline(e) {
+  if (e.deadlineLabel) return e.deadlineLabel;
+  if (e.deadline) return new Date(e.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  return 'No fixed date';
+}
+
+// ── FILTER / SORT ─────────────────────────────────────────────────────────────
+function getFiltered() {
+  let r = entries;
+  if (activeType !== '__all__') r = r.filter(e => e.type === activeType);
+  if (!activeCats.has('__all__')) r = r.filter(e => activeCats.has(e.category));
+  if (searchText) {
+    const q = searchText.toLowerCase();
+    r = r.filter(e =>
+      (e.name||'').toLowerCase().includes(q) ||
+      (e.pipeline||'').toLowerCase().includes(q) ||
+      (e.category||'').toLowerCase().includes(q) ||
+      (e.type||'').toLowerCase().includes(q) ||
+      (e.notes||'').toLowerCase().includes(q) ||
+      (e.eligibility||'').toLowerCase().includes(q)
+    );
+  }
+  return [...r].sort((a,b) => {
+    if (sortKey === 'deadline') {
+      const av = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+      const bv = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+      if (av === bv) return (PRI[a.priority]??1) - (PRI[b.priority]??1);
+      return (av - bv) * sortDir;
+    }
+    if (sortKey === 'priority') return ((PRI[a.priority]??1) - (PRI[b.priority]??1)) * sortDir;
+    if (sortKey === 'name') return a.name.localeCompare(b.name) * sortDir;
+    return 0;
+  });
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() { renderBanner(); renderTimeline(); renderFocusPanel(); renderTabs(); renderCatPills(); renderTable(); }
+
+// ── BANNER ────────────────────────────────────────────────────────────────────
+function renderBanner() {
+  const wrap = document.getElementById('banner-wrap');
+  if (bannerDismissed) { wrap.innerHTML = ''; return; }
+  const urgent = entries
+    .filter(e => { const n = daysUntil(e.deadline); return n !== null && n >= 0 && n <= 30 && e.status !== 'Done' && e.status !== 'Skipped'; })
+    .sort((a,b) => new Date(a.deadline) - new Date(b.deadline)).slice(0,4);
+  if (!urgent.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `<div class="banner">
+    <span class="banner-icon">&#128293;</span>
+    <div class="banner-content">
+      <div class="banner-title">Due within 30 days</div>
+      <div class="banner-items">${urgent.map(e=>`<span class="banner-item">${esc(e.name)} &mdash; <strong>${esc(daysLabel(e.deadline))}</strong></span>`).join('')}</div>
+    </div>
+    <button class="banner-close" id="banner-dismiss">&#10005;</button>
+  </div>`;
+  document.getElementById('banner-dismiss').addEventListener('click', () => { bannerDismissed = true; renderBanner(); });
+}
+
+// ── TIMELINE ──────────────────────────────────────────────────────────────────
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const byMonth = Array.from({length: 12}, () => []);
+  entries.forEach(e => {
+    if (!e.deadline) return;
+    const d = new Date(e.deadline);
+    if (d.getFullYear() !== currentYear) return;
+    byMonth[d.getMonth()].push(e);
+  });
+
+  if (!byMonth.some(m => m.length > 0)) { tl.innerHTML = ''; return; }
+
+  tl.innerHTML = MONTHS.map((month, mi) => {
+    const isCurrent = mi === currentMonth;
+    const dots = byMonth[mi].map(e => {
+      const days = daysUntil(e.deadline);
+      const urg = urgClass(e.deadline);
+      const isPast = days !== null && days < 0;
+      const tip = e.name + (days !== null ? ' \u2014 ' + daysLabel(e.deadline) : '');
+      return `<span class="tl-dot ${urg}${isPast?' tl-past':''}" data-tl-id="${esc(e.id)}" title="${esc(tip)}">&#9679;</span>`;
+    }).join('');
+    return `<div class="tl-col${isCurrent?' tl-current':''}">
+      <div class="tl-month">${month}</div>
+      <div class="tl-dots">${dots}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── FOCUS PANEL ───────────────────────────────────────────────────────────────
+function renderFocusPanel() {
+  const panel = document.getElementById('focus-panel');
+  const active = entries.filter(e => (e.status === 'Committed' || e.status === 'Doing') && (e.checklist||[]).length > 0);
+  if (!active.length) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+
+  const totalPending = active.reduce((sum, e) => sum + (e.checklist||[]).filter(c => !c.done).length, 0);
+  const isOpen = !focusPanelCollapsed;
+
+  const body = active.map(e => {
+    const cl = e.checklist || [];
+    return `<div class="focus-entry">
+      <div class="focus-entry-name">${esc(e.name)}</div>
+      <ul class="checklist">
+        ${cl.map(item => `<li>
+          <input type="checkbox" id="fp-${esc(item.id)}" data-action="cl-toggle" data-entry="${esc(e.id)}" data-item="${esc(item.id)}"${item.done?' checked':''}>
+          <label for="fp-${esc(item.id)}">${esc(item.text)}</label>
+        </li>`).join('')}
+      </ul>
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `<div class="focus-header" id="focus-toggle">
+      <span class="focus-chevron ${isOpen?'open':''}">&#9658;</span>
+      <span class="focus-title">&#9889; What&#8217;s Active</span>
+      <span class="focus-count">${totalPending} pending task${totalPending===1?'':'s'} across ${active.length} entr${active.length===1?'y':'ies'}</span>
+    </div>
+    ${isOpen ? `<div class="focus-body">${body}</div>` : ''}`;
+
+  document.getElementById('focus-toggle').addEventListener('click', () => {
+    focusPanelCollapsed = !focusPanelCollapsed;
+    try { localStorage.setItem(FOCUS_KEY, focusPanelCollapsed ? '1' : '0'); } catch(err) {}
+    renderFocusPanel();
+  });
+}
+
+// ── FILTER PERSISTENCE ────────────────────────────────────────────────────────
+function saveFilters() {
+  try { localStorage.setItem(FILTERS_KEY, JSON.stringify({ type: activeType, cats: [...activeCats] })); } catch(err) {}
+}
+function loadFilters() {
+  try {
+    const raw = localStorage.getItem(FILTERS_KEY);
+    if (!raw) return;
+    const f = JSON.parse(raw);
+    if (f.type) activeType = f.type;
+    if (Array.isArray(f.cats) && f.cats.length) activeCats = new Set(f.cats);
+  } catch(err) {}
+}
+
+// ── TYPE TABS ─────────────────────────────────────────────────────────────────
+function renderTabs() {
+  const counts = {};
+  entries.forEach(e => { counts[e.type] = (counts[e.type]||0) + 1; });
+  const total = entries.length;
+  const tabs = [['__all__', 'All', total], ...TYPES.map(t => [t, t, counts[t]||0])];
+  document.getElementById('type-tabs').innerHTML = tabs.map(([val, label, count]) =>
+    `<button class="type-tab ${activeType===val?'active':''}" data-type="${esc(val)}">${esc(label)}${count ? ` <span style="opacity:.5;font-weight:400;font-size:11px;font-family:var(--font-mono)">${count}</span>` : ''}</button>`
+  ).join('');
+}
+
+// ── CATEGORY PILLS ────────────────────────────────────────────────────────────
+function renderCatPills() {
+  const usedCats = [...new Set(entries.map(e => e.category))].sort();
+  const allActive = activeCats.has('__all__');
+  document.getElementById('cat-pills').innerHTML =
+    `<button class="pill ${allActive?'active':''}" data-cat="__all__">All</button>` +
+    usedCats.map(c => `<button class="pill ${!allActive && activeCats.has(c)?'active':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const filtered = getFiltered();
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('empty-state');
+  document.getElementById('entry-count').textContent = `${filtered.length} of ${entries.length} entries`;
+
+  ['name','deadline','priority'].forEach(k => {
+    const el = document.getElementById('sort-' + k);
+    if (el) el.textContent = sortKey === k ? (sortDir===1?'\u25be':'\u25b4') : '';
+  });
+
+  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  const rows = [];
+  filtered.forEach(e => {
+    const isExp = expandedIds.has(e.id);
+    const urg = urgClass(e.deadline);
+    const dl = fmtDeadline(e);
+    const dlL = daysLabel(e.deadline);
+    const cl = e.checklist || [];
+    const clDone = cl.filter(c=>c.done).length;
+
+    rows.push(`<tr class="${e.status==='Skipped'?'row-skipped':''} ${isExp?'expanded':''}" data-id="${esc(e.id)}">
+      <td>
+        <div class="entry-name" data-action="expand" data-id="${esc(e.id)}">
+          <span class="expand-arrow ${isExp?'open':''}">&#9658;</span>
+          <span>${esc(e.name)}</span>
+        </div>
+        ${e.pipeline ? `<div class="pipeline-label">${esc(e.pipeline)}</div>` : ''}
+      </td>
+      <td>
+        <span class="type-badge type-${esc(e.type||'Other')}">${esc(e.type||'Other')}</span><br>
+        <span class="cat-badge" style="margin-top:4px;display:inline-block">${esc(e.category)}</span>
+      </td>
+      <td>
+        <div class="deadline-cell ${urg}">${esc(dl)}</div>
+        ${dlL ? `<div class="days-label ${urg}">${esc(dlL)}</div>` : ''}
+      </td>
+      <td><span class="pri-badge pri-${esc(e.priority)}">${esc(e.priority)}</span></td>
+      <td>
+        <select class="status-select" data-action="status" data-id="${esc(e.id)}">
+          ${STATUSES.map(s=>`<option value="${s}"${e.status===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-icon btn-sm" data-action="edit" data-id="${esc(e.id)}" title="Edit">&#9998;</button>
+        <button class="btn btn-icon btn-sm" data-action="delete" data-id="${esc(e.id)}" title="Delete">&#128465;</button>
+      </td>
+    </tr>`);
+
+    if (isExp) {
+      rows.push(`<tr class="expand-row"><td colspan="6"><div class="expand-inner">
+        ${e.notes ? `<div class="expand-section" style="flex:2"><h4>Notes</h4><div class="notes-text">${esc(e.notes)}</div></div>` : ''}
+        ${e.eligibility ? `<div class="expand-section"><h4>Eligibility</h4><div class="elig-text">${esc(e.eligibility)}</div></div>` : ''}
+        <div class="expand-section">
+          <h4>Prep Checklist${cl.length?` <span style="color:var(--text3);font-weight:400">(${clDone}/${cl.length})</span>`:''}</h4>
+          <ul class="checklist">
+            ${cl.map(item=>`<li>
+              <input type="checkbox" id="ci-${esc(item.id)}" data-action="cl-toggle" data-entry="${esc(e.id)}" data-item="${esc(item.id)}"${item.done?' checked':''}>
+              <label for="ci-${esc(item.id)}">${esc(item.text)}</label>
+              <button class="cl-del" data-action="cl-delete" data-entry="${esc(e.id)}" data-item="${esc(item.id)}" title="Remove">&#10005;</button>
+            </li>`).join('')}
+          </ul>
+          <div class="add-cl-row">
+            <input type="text" class="cl-new-input" data-entry="${esc(e.id)}" placeholder="Add task\u2026">
+            <button class="btn btn-sm" data-action="cl-add" data-entry="${esc(e.id)}">Add</button>
+          </div>
+        </div>
+      </div></td></tr>`);
+    }
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+// ── EVENT DELEGATION ──────────────────────────────────────────────────────────
+document.getElementById('type-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('[data-type]');
+  if (!tab) return;
+  activeType = tab.dataset.type;
+  saveFilters();
+  renderAll();
+});
+
+document.getElementById('cat-pills').addEventListener('click', e => {
+  const pill = e.target.closest('[data-cat]');
+  if (!pill) return;
+  const cat = pill.dataset.cat;
+  if (cat === '__all__') {
+    activeCats = new Set(['__all__']);
+  } else {
+    activeCats.delete('__all__');
+    if (activeCats.has(cat)) { activeCats.delete(cat); if (!activeCats.size) activeCats = new Set(['__all__']); }
+    else activeCats.add(cat);
+  }
+  saveFilters();
+  renderAll();
+});
+
+document.getElementById('table-body').addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  const id = el.dataset.id || el.dataset.entry;
+  if (action === 'expand')    { toggleExpand(id); }
+  else if (action === 'edit')      { openEditModal(id); }
+  else if (action === 'delete')    { openDeleteConfirm(id); }
+  else if (action === 'cl-delete') { deleteCheckItem(el.dataset.entry, el.dataset.item); }
+  else if (action === 'cl-add') {
+    const inp = document.querySelector(`.cl-new-input[data-entry="${CSS.escape(id)}"]`);
+    if (inp) addCheckItem(id, inp.value.trim(), inp);
+  }
+});
+document.getElementById('table-body').addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.action === 'status')    { updateStatus(el.dataset.id, el.value); }
+  else if (el.dataset.action === 'cl-toggle') { toggleCheckItem(el.dataset.entry, el.dataset.item); }
+});
+document.getElementById('table-body').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.classList.contains('cl-new-input')) {
+    e.preventDefault();
+    addCheckItem(e.target.dataset.entry, e.target.value.trim(), e.target);
+  }
+});
+
+document.getElementById('timeline').addEventListener('click', e => {
+  const dot = e.target.closest('[data-tl-id]');
+  if (!dot || dot.classList.contains('tl-past')) return;
+  const id = dot.dataset.tlId;
+  const row = document.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.add('row-highlight');
+  setTimeout(() => row.classList.remove('row-highlight'), 1400);
+});
+
+document.getElementById('focus-panel').addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.action === 'cl-toggle') { toggleCheckItem(el.dataset.entry, el.dataset.item); }
+});
+
+document.getElementById('search').addEventListener('input', e => { searchText = e.target.value.trim(); renderAll(); });
+document.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.sort;
+  if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+  renderAll();
+}));
+
+document.getElementById('btn-add').addEventListener('click', openAddModal);
+document.getElementById('btn-export').addEventListener('click', exportData);
+document.getElementById('btn-import').addEventListener('click', openImportModal);
+document.getElementById('btn-ai-import').addEventListener('click', openAIModal);
+document.getElementById('btn-manage-cats').addEventListener('click', openCatModal);
+
+// ── EXPAND / STATUS / CHECKLIST ───────────────────────────────────────────────
+function toggleExpand(id) { if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id); renderTable(); }
+function updateStatus(id, val) { const e = entries.find(x=>x.id===id); if (e) { e.status=val; save(entries); renderTable(); } }
+function addCheckItem(entryId, text, inp) {
+  if (!text) return;
+  const e = entries.find(x=>x.id===entryId); if (!e) return;
+  if (!e.checklist) e.checklist = [];
+  e.checklist.push({ id: uid(), text, done: false });
+  save(entries); renderTable();
+  setTimeout(() => { const el = document.querySelector(`.cl-new-input[data-entry="${CSS.escape(entryId)}"]`); if (el) el.focus(); }, 10);
+}
+function toggleCheckItem(entryId, itemId) {
+  const e = entries.find(x=>x.id===entryId);
+  const item = e && (e.checklist||[]).find(c=>c.id===itemId);
+  if (item) { item.done = !item.done; save(entries); renderTable(); }
+}
+function deleteCheckItem(entryId, itemId) {
+  const e = entries.find(x=>x.id===entryId);
+  if (e) { e.checklist = (e.checklist||[]).filter(c=>c.id!==itemId); save(entries); renderTable(); }
+}
+
+// ── ENTRY MODAL ───────────────────────────────────────────────────────────────
+function populateCategorySelect(selected) {
+  const sel = document.getElementById('f-category');
+  sel.innerHTML = `<option value="">Select\u2026</option>` +
+    categories.map(c => `<option value="${esc(c)}"${c===selected?' selected':''}>${esc(c)}</option>`).join('');
+}
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add Entry';
+  ['f-name','f-pipeline','f-deadline','f-deadline-label','f-eligibility','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-type').value = '';
+  document.getElementById('f-priority').value = 'Medium';
+  document.getElementById('f-status').value = 'Contemplating';
+  populateCategorySelect('');
+  document.getElementById('entry-modal').style.display = 'flex';
+  document.getElementById('f-name').focus();
+}
+function openEditModal(id) {
+  editingId = id;
+  const e = entries.find(x=>x.id===id); if (!e) return;
+  document.getElementById('modal-title').textContent = 'Edit Entry';
+  document.getElementById('f-name').value = e.name || '';
+  document.getElementById('f-pipeline').value = e.pipeline || '';
+  document.getElementById('f-type').value = e.type || '';
+  document.getElementById('f-priority').value = e.priority || 'Medium';
+  document.getElementById('f-deadline').value = e.deadline || '';
+  document.getElementById('f-deadline-label').value = e.deadlineLabel || '';
+  document.getElementById('f-status').value = e.status || 'Contemplating';
+  document.getElementById('f-eligibility').value = e.eligibility || '';
+  document.getElementById('f-notes').value = e.notes || '';
+  populateCategorySelect(e.category || '');
+  document.getElementById('entry-modal').style.display = 'flex';
+  document.getElementById('f-name').focus();
+}
+function closeModal() { document.getElementById('entry-modal').style.display = 'none'; editingId = null; }
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('entry-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('modal-save').addEventListener('click', () => {
+  const name = document.getElementById('f-name').value.trim();
+  const type = document.getElementById('f-type').value;
+  const category = document.getElementById('f-category').value;
+  if (!name) { alert('Name is required.'); return; }
+  if (!type) { alert('Type is required.'); return; }
+  if (!category) { alert('Category is required.'); return; }
+  const data = { name, type, category,
+    pipeline: document.getElementById('f-pipeline').value.trim(),
+    priority: document.getElementById('f-priority').value,
+    deadline: document.getElementById('f-deadline').value || null,
+    deadlineLabel: document.getElementById('f-deadline-label').value.trim(),
+    status: document.getElementById('f-status').value,
+    eligibility: document.getElementById('f-eligibility').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  if (editingId) {
+    const i = entries.findIndex(x=>x.id===editingId);
+    if (i !== -1) entries[i] = { ...entries[i], ...data };
+  } else {
+    entries.push({ id: uid(), checklist: [], ...data });
+  }
+  save(entries); closeModal(); renderAll();
+});
+
+// ── DELETE ────────────────────────────────────────────────────────────────────
+function openDeleteConfirm(id) {
+  deletingId = id;
+  const e = entries.find(x=>x.id===id);
+  document.getElementById('confirm-msg').textContent = `Are you sure you want to delete "${e?e.name:'this entry'}"? This cannot be undone.`;
+  document.getElementById('confirm-modal').style.display = 'flex';
+}
+function closeConfirm() { document.getElementById('confirm-modal').style.display = 'none'; deletingId = null; }
+document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
+document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeConfirm(); });
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  if (!deletingId) return;
+  entries = entries.filter(x=>x.id!==deletingId);
+  expandedIds.delete(deletingId);
+  save(entries); closeConfirm(); renderAll();
+});
+
+// ── MANAGE CATEGORIES ─────────────────────────────────────────────────────────
+function openCatModal() {
+  renderCatList();
+  document.getElementById('new-cat-input').value = '';
+  document.getElementById('cat-modal').style.display = 'flex';
+  document.getElementById('new-cat-input').focus();
+}
+function closeCatModal() { document.getElementById('cat-modal').style.display = 'none'; }
+function renderCatList() {
+  const usageCounts = {};
+  entries.forEach(e => { usageCounts[e.category] = (usageCounts[e.category]||0)+1; });
+  document.getElementById('cat-list').innerHTML = categories.map(c => {
+    const count = usageCounts[c] || 0;
+    return `<li>
+      <span>${esc(c)}${count ? `<span class="cat-count">${count} entr${count===1?'y':'ies'}</span>` : ''}</span>
+      <button class="cat-del" data-cat="${esc(c)}">&#10005;</button>
+    </li>`;
+  }).join('');
+  document.querySelectorAll('.cat-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.cat;
+      const count = usageCounts[cat] || 0;
+      if (count > 0) {
+        if (!confirm(`"${cat}" is used by ${count} entr${count===1?'y':'ies'}. Delete anyway? Those entries will have no category.`)) return;
+        entries.forEach(e => { if (e.category === cat) e.category = ''; });
+        save(entries);
+      }
+      categories = categories.filter(c => c !== cat);
+      saveCats(categories);
+      if (activeCats.has(cat)) { activeCats.delete(cat); if (!activeCats.size) activeCats = new Set(['__all__']); }
+      renderCatList();
+      renderAll();
+    });
+  });
+}
+document.getElementById('btn-add-cat').addEventListener('click', () => {
+  const inp = document.getElementById('new-cat-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (categories.map(c=>c.toLowerCase()).includes(val.toLowerCase())) { alert('Category already exists.'); return; }
+  categories.push(val);
+  saveCats(categories);
+  inp.value = '';
+  renderCatList();
+});
+document.getElementById('new-cat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-cat').click(); }
+});
+document.getElementById('cat-modal-done').addEventListener('click', closeCatModal);
+document.getElementById('cat-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeCatModal(); });
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportData() {
+  const today = new Date().toISOString().slice(0,10);
+  const payload = { entries, categories };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `compfinder-backup-${today}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── IMPORT MODAL ──────────────────────────────────────────────────────────────
+let _importParsed = null; // { entries, categories } ready to commit
+
+function openImportModal() {
+  _importParsed = null;
+  document.getElementById('import-paste-input').value = '';
+  document.getElementById('import-file-name').style.display = 'none';
+  document.getElementById('import-file-zone').classList.remove('has-file');
+  document.getElementById('import-file-zone').querySelector('.import-file-label').textContent = 'Click to choose a .json file';
+  document.getElementById('import-validation').style.display = 'none';
+  document.getElementById('import-confirm').disabled = true;
+  document.querySelectorAll('[name=import-mode]')[0].checked = true;
+  // reset to file tab
+  document.querySelectorAll('.import-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'file'));
+  document.querySelectorAll('.import-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'import-panel-file'));
+  document.getElementById('import-modal').style.display = 'flex';
+}
+function closeImportModal() {
+  document.getElementById('import-modal').style.display = 'none';
+  document.getElementById('import-input').value = '';
+  _importParsed = null;
+}
+
+// Tab switching inside import modal
+document.getElementById('import-modal').addEventListener('click', e => {
+  const tab = e.target.closest('.import-tab');
+  if (tab) {
+    document.querySelectorAll('.import-tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.import-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'import-panel-' + tab.dataset.tab));
+    _importParsed = null;
+    document.getElementById('import-validation').style.display = 'none';
+    document.getElementById('import-confirm').disabled = true;
+    return;
+  }
+  if (e.target === e.currentTarget) closeImportModal();
+  if (e.target.id === 'import-file-zone' || e.target.closest('#import-file-zone')) {
+    document.getElementById('import-input').click();
+  }
+});
+document.getElementById('import-cancel').addEventListener('click', closeImportModal);
+
+// File picker → parse
+document.getElementById('import-input').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const result = parseImportJSON(ev.target.result);
+    if (result.error) {
+      showImportValidation('import-validation', result.error, 'err');
+      document.getElementById('import-confirm').disabled = true;
+      _importParsed = null;
+    } else {
+      _importParsed = result;
+      showImportValidation('import-validation', buildValidationMsg(result), result.warnings.length ? 'warn' : 'ok');
+      document.getElementById('import-confirm').disabled = false;
+      document.getElementById('import-file-zone').classList.add('has-file');
+      document.getElementById('import-file-zone').querySelector('.import-file-label').textContent = 'File loaded:';
+      const nm = document.getElementById('import-file-name');
+      nm.textContent = file.name; nm.style.display = '';
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// Paste input → parse on input
+document.getElementById('import-paste-input').addEventListener('input', () => {
+  const raw = document.getElementById('import-paste-input').value.trim();
+  if (!raw) {
+    document.getElementById('import-validation').style.display = 'none';
+    document.getElementById('import-confirm').disabled = true;
+    _importParsed = null;
+    return;
+  }
+  const result = parseImportJSON(raw);
+  if (result.error) {
+    showImportValidation('import-validation', result.error, 'err');
+    document.getElementById('import-confirm').disabled = true;
+    _importParsed = null;
+  } else {
+    _importParsed = result;
+    showImportValidation('import-validation', buildValidationMsg(result), result.warnings.length ? 'warn' : 'ok');
+    document.getElementById('import-confirm').disabled = false;
+  }
+});
+
+document.getElementById('import-confirm').addEventListener('click', () => {
+  if (!_importParsed) return;
+  const mode = document.querySelector('[name=import-mode]:checked').value;
+  commitImport(_importParsed, mode);
+  closeImportModal();
+});
+
+// ── PARSE + VALIDATE ──────────────────────────────────────────────────────────
+function parseImportJSON(raw) {
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { return { error: 'Invalid JSON — ' + e.message }; }
+  const rawEntries = Array.isArray(data) ? data : data.entries;
+  const rawCats = !Array.isArray(data) && Array.isArray(data.categories) ? data.categories : null;
+  if (!Array.isArray(rawEntries)) return { error: 'No entries array found. Expected { "entries": [...] } or a bare array.' };
+  if (rawEntries.length === 0) return { error: 'The entries array is empty.' };
+
+  const valid = [], warnings = [];
+  rawEntries.forEach((e, i) => {
+    if (typeof e !== 'object' || e === null) { warnings.push(`Entry #${i+1}: not an object — skipped`); return; }
+    if (!e.name || typeof e.name !== 'string' || !e.name.trim()) { warnings.push(`Entry #${i+1}: missing required field "name" — skipped`); return; }
+    // sanitize / fill defaults
+    const fixed = {
+      id:            e.id || uid(),
+      name:          e.name.trim(),
+      pipeline:      typeof e.pipeline === 'string' ? e.pipeline : '',
+      type:          TYPES.includes(e.type) ? e.type : 'Competition',
+      category:      e.category || 'Other',
+      deadline:      e.deadline || null,
+      deadlineLabel: e.deadlineLabel || e.deadline_label || '',
+      eligibility:   e.eligibility || '',
+      notes:         e.notes || '',
+      status:        STATUS_MIGRATE[e.status] || (STATUSES.includes(e.status) ? e.status : 'Contemplating'),
+      priority:      ['High','Medium','Low'].includes(e.priority) ? e.priority : 'Medium',
+      checklist:     Array.isArray(e.checklist) ? e.checklist.map(c => ({ id: c.id||uid(), text: String(c.text||''), done: !!c.done })) : [],
+      url:           e.url || '',
+    };
+    // deadline format check
+    if (fixed.deadline && !/^\d{4}-\d{2}-\d{2}$/.test(fixed.deadline)) {
+      warnings.push(`"${fixed.name}": deadline "${fixed.deadline}" is not YYYY-MM-DD format — cleared`);
+      fixed.deadline = null;
+    }
+    valid.push(fixed);
+  });
+
+  if (!valid.length) return { error: 'No valid entries found after validation. Check that each entry has at least a "name" field.' };
+  return { entries: valid, categories: rawCats, warnings, skipped: rawEntries.length - valid.length };
+}
+
+function buildValidationMsg(result) {
+  const { entries: v, warnings, skipped } = result;
+  let lines = [`<strong class="ok-color">&#10003; ${v.length} valid entr${v.length===1?'y':'ies'} ready to import</strong>`];
+  if (skipped) lines.push(`<span class="warn-color">&#9888; ${skipped} entr${skipped===1?'y':'ies'} skipped (missing name field)</span>`);
+  if (warnings.length) {
+    lines.push(`<span class="warn-color">&#9888; ${warnings.length} warning${warnings.length===1?'':'s'}:</span>`);
+    lines.push('<ul>' + warnings.map(w => `<li>${esc(w)}</li>`).join('') + '</ul>');
+  }
+  return lines.join('<br>');
+}
+
+function showImportValidation(elId, html, level) {
+  const el = document.getElementById(elId);
+  el.className = 'import-validation ' + level;
+  el.innerHTML = html;
+  el.style.display = '';
+}
+
+// ── COMMIT IMPORT ─────────────────────────────────────────────────────────────
+function commitImport(parsed, mode) {
+  const { entries: incoming, categories: incomingCats } = parsed;
+  if (mode === 'replace') {
+    entries = incoming;
+  } else {
+    // merge: add entries whose id doesn't already exist
+    const existingIds = new Set(entries.map(e => e.id));
+    const toAdd = incoming.filter(e => !existingIds.has(e.id));
+    entries = [...entries, ...toAdd];
+  }
+  if (incomingCats) {
+    // merge categories: add any new ones
+    const lc = new Set(categories.map(c => c.toLowerCase()));
+    incomingCats.forEach(c => { if (!lc.has(c.toLowerCase())) categories.push(c); });
+    saveCats(categories);
+  }
+  save(entries); expandedIds.clear(); renderAll();
+}
+
+// ── AI PROMPT MODAL ───────────────────────────────────────────────────────────
+function openAIModal() {
+  document.getElementById('ai-list-input').value = '';
+  document.getElementById('ai-paste-input').value = '';
+  document.getElementById('ai-validation').style.display = 'none';
+  document.getElementById('ai-copy-success').style.display = 'none';
+  document.querySelectorAll('[name=ai-import-mode]')[0].checked = true;
+  document.getElementById('ai-modal').style.display = 'flex';
+}
+function closeAIModal() { document.getElementById('ai-modal').style.display = 'none'; }
+
+document.getElementById('ai-cancel').addEventListener('click', closeAIModal);
+document.getElementById('ai-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAIModal(); });
+
+document.getElementById('ai-copy-btn').addEventListener('click', () => {
+  const list = document.getElementById('ai-list-input').value.trim();
+  const prompt = buildAIPrompt(list);
+  navigator.clipboard.writeText(prompt).then(() => {
+    const msg = document.getElementById('ai-copy-success');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  }).catch(() => {
+    // fallback: select a hidden textarea
+    const ta = document.createElement('textarea');
+    ta.value = prompt; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const msg = document.getElementById('ai-copy-success');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  });
+});
+
+document.getElementById('ai-import-btn').addEventListener('click', () => {
+  const raw = document.getElementById('ai-paste-input').value.trim();
+  if (!raw) { showImportValidation('ai-validation', 'Paste the AI\'s JSON output above first.', 'err'); return; }
+  const result = parseImportJSON(raw);
+  if (result.error) { showImportValidation('ai-validation', result.error, 'err'); return; }
+  showImportValidation('ai-validation', buildValidationMsg(result), result.warnings.length ? 'warn' : 'ok');
+  const mode = document.querySelector('[name=ai-import-mode]:checked').value;
+  commitImport(result, mode);
+  setTimeout(closeAIModal, 900);
+});
+
+function buildAIPrompt(userList) {
+  const catList = categories.join(', ');
+  const today = new Date().toISOString().slice(0,10);
+  const listSection = userList ? `\n\nHere is my list of competitions/programs:\n${userList}\n` : '\n\n[USER WILL ADD THEIR LIST HERE]\n';
+  return `You are helping me build a competition tracker. I need you to research each competition or program I list and return a JSON array of entries in the exact format below.
+
+TODAY'S DATE: ${today}
+
+OUTPUT FORMAT — return ONLY a JSON code block, no other text:
+\`\`\`json
+[
+  {
+    "name": "Full official competition name",
+    "pipeline": "Stage1 → Stage2 → Stage3  (leave empty string if not a multi-stage track)",
+    "type": "Competition | Program | Fellowship | Other",
+    "category": "one of: ${catList}  (pick the best match, or use Other)",
+    "deadline": "YYYY-MM-DD  (next upcoming deadline, or null if unknown)",
+    "deadlineLabel": "Human-readable deadline note, e.g. 'Registration: Sep 15' or '~Mar–Apr'",
+    "eligibility": "e.g. 'Ages 13–18, global' or 'Grade 9–12, India'",
+    "notes": "2–3 sentence summary: what it is, why it matters, what to know",
+    "status": "Contemplating",
+    "priority": "High | Medium | Low"
+  }
+]
+\`\`\`
+
+RULES:
+- Search for current/upcoming deadlines (year ${new Date().getFullYear()} or ${new Date().getFullYear()+1})
+- If a competition has multi-round stages (e.g. qualifier → national → international), list the FIRST stage deadline in "deadline" and describe the full pipeline in "pipeline"
+- Use null for deadline if you genuinely cannot find it; use "deadlineLabel" for approximate info
+- priority: High = prestigious/highly competitive/significant opportunity; Medium = solid option; Low = niche or lower stakes
+- Do NOT include any text outside the JSON code block${listSection}Research each item above and return the JSON array. Include all the competitions listed.`;
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeConfirm(); closeCatModal(); closeImportModal(); closeAIModal(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); document.getElementById('search').focus(); }
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadFilters();
+renderAll();
+</script>
+</body>
+</html>
