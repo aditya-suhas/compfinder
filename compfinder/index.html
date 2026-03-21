@@ -558,6 +558,22 @@ tr.row-skipped td { opacity: 0.38; }
 }
 .ai-paste-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .ai-paste-area::placeholder { color: var(--text3); font-family: var(--font-ui); font-size: 12px; }
+.ai-tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+.ai-tab { padding: 6px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 12px; font-family: var(--font-ui); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.ai-tab:hover { background: var(--bg4, var(--bg3)); border-color: var(--accent); color: var(--text); }
+.ai-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ai-profile-grid { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 8px 10px; margin-bottom: 14px; }
+.ai-profile-label { font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; }
+.ai-profile-input { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 8px 10px; font-size: 13px; font-family: var(--font-ui); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+.ai-profile-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.ai-profile-input option { background: var(--bg2); }
+.ai-subjects { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+.ai-subjects label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); cursor: pointer; padding: 4px 9px; border: 1px solid var(--border); border-radius: var(--radius); transition: background 0.12s, border-color 0.12s; user-select: none; }
+.ai-subjects label:hover { background: var(--bg3); border-color: var(--accent); }
+.ai-subjects input[type=checkbox] { accent-color: var(--accent); width: 13px; height: 13px; }
+.ai-extra-input { width: 100%; box-sizing: border-box; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 9px 11px; font-size: 12px; font-family: var(--font-ui); outline: none; resize: vertical; min-height: 60px; transition: border-color 0.15s, box-shadow 0.15s; }
+.ai-extra-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.ai-extra-input::placeholder { color: var(--text3); }
 
 /* ── SCROLLBAR ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -767,14 +783,44 @@ tr.row-skipped td { opacity: 0.38; }
 <div id="ai-modal" class="modal-overlay" style="display:none">
   <div class="modal ai-modal">
     <h2>&#9889; AI Import</h2>
-    <p class="ai-modal-sub">Generate a prompt to give any LLM (Claude, ChatGPT, Gemini&hellip;). It will search up the competition details and return JSON you can import directly.</p>
+    <p class="ai-modal-sub">Generate a prompt to give any LLM (Claude, ChatGPT, Gemini&hellip;). It will research competitions and return JSON you can import directly.</p>
 
-    <label class="ai-list-label">Your competition list</label>
-    <textarea class="ai-list-input" id="ai-list-input" placeholder="e.g.&#10;- PRIMES USA&#10;- Regeneron STS&#10;- RSI (Research Science Institute)&#10;- Perimeter Institute Waterloo&#10;- MIT PRIMES&#10;- IOQM track"></textarea>
+    <div class="ai-tabs">
+      <button class="ai-tab active" data-tab="format">Format Known</button>
+      <button class="ai-tab" data-tab="discover">Discover</button>
+    </div>
 
-    <div class="modal-actions" style="margin-top:12px;justify-content:flex-start">
-      <button class="btn btn-primary" id="ai-copy-btn">&#128203; Copy Prompt</button>
-      <span class="ai-copy-success" id="ai-copy-success">&#10003; Copied to clipboard!</span>
+    <!-- Tab: Format Known -->
+    <div id="ai-tab-format" class="ai-tab-panel">
+      <label class="ai-list-label">Your competition list</label>
+      <textarea class="ai-list-input" id="ai-list-input" placeholder="e.g.&#10;- PRIMES USA&#10;- Regeneron STS&#10;- RSI (Research Science Institute)&#10;- Perimeter Institute Waterloo&#10;- MIT PRIMES&#10;- IOQM track"></textarea>
+      <div class="modal-actions" style="margin-top:12px;justify-content:flex-start">
+        <button class="btn btn-primary" id="ai-copy-btn">&#128203; Copy Prompt</button>
+        <span class="ai-copy-success" id="ai-copy-success">&#10003; Copied!</span>
+      </div>
+    </div>
+
+    <!-- Tab: Discover -->
+    <div id="ai-tab-discover" class="ai-tab-panel" style="display:none">
+      <div class="ai-profile-grid">
+        <span class="ai-profile-label">Grade / Year</span>
+        <select id="ai-grade" class="ai-profile-input">
+          <option>Grade 8</option><option>Grade 9</option><option>Grade 10</option>
+          <option selected>Grade 11</option><option>Grade 12</option>
+          <option>Undergrad Year 1</option><option>Undergrad Year 2</option>
+          <option>Undergrad Year 3</option><option>Undergrad Year 4</option>
+        </select>
+        <span class="ai-profile-label">Country</span>
+        <input type="text" id="ai-country" class="ai-profile-input" value="India" placeholder="e.g. India, USA">
+      </div>
+      <span class="ai-profile-label" style="display:block;margin-bottom:8px">Subjects / Interests</span>
+      <div class="ai-subjects" id="ai-subjects"><!-- populated by JS --></div>
+      <span class="ai-profile-label" style="display:block;margin:10px 0 6px">Extra context <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></span>
+      <textarea id="ai-extra" class="ai-extra-input" placeholder="e.g. comfortable with proofs, interested in research programs, prefer online competitions, strong in biology lab work"></textarea>
+      <div class="modal-actions" style="margin-top:12px;justify-content:flex-start">
+        <button class="btn btn-primary" id="ai-discover-copy-btn">&#128203; Copy Discovery Prompt</button>
+        <span class="ai-copy-success" id="ai-discover-copy-success">&#10003; Copied!</span>
+      </div>
     </div>
 
     <hr class="ai-divider">
@@ -1588,13 +1634,35 @@ function openAIModal() {
   document.getElementById('ai-paste-input').value = '';
   document.getElementById('ai-validation').style.display = 'none';
   document.getElementById('ai-copy-success').style.display = 'none';
+  document.getElementById('ai-discover-copy-success').style.display = 'none';
   document.querySelectorAll('[name=ai-import-mode]')[0].checked = true;
+  // Reset to Format Known tab
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.ai-tab[data-tab="format"]').classList.add('active');
+  document.getElementById('ai-tab-format').style.display = '';
+  document.getElementById('ai-tab-discover').style.display = 'none';
+  // Populate subject checkboxes from current categories
+  const subjectsEl = document.getElementById('ai-subjects');
+  subjectsEl.innerHTML = categories.map(cat =>
+    `<label><input type="checkbox" class="ai-subject" value="${esc(cat)}"> ${esc(cat)}</label>`
+  ).join('');
   document.getElementById('ai-modal').style.display = 'flex';
 }
 function closeAIModal() { document.getElementById('ai-modal').style.display = 'none'; }
 
 document.getElementById('ai-cancel').addEventListener('click', closeAIModal);
 document.getElementById('ai-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAIModal(); });
+
+// Tab switcher
+document.querySelectorAll('.ai-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    document.getElementById('ai-tab-format').style.display = which === 'format' ? '' : 'none';
+    document.getElementById('ai-tab-discover').style.display = which === 'discover' ? '' : 'none';
+  });
+});
 
 document.getElementById('ai-copy-btn').addEventListener('click', () => {
   const list = document.getElementById('ai-list-input').value.trim();
@@ -1612,6 +1680,26 @@ document.getElementById('ai-copy-btn').addEventListener('click', () => {
     const msg = document.getElementById('ai-copy-success');
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  });
+});
+
+document.getElementById('ai-discover-copy-btn').addEventListener('click', () => {
+  const grade   = document.getElementById('ai-grade').value;
+  const country = document.getElementById('ai-country').value.trim() || 'unspecified';
+  const subjects = [...document.querySelectorAll('.ai-subject:checked')].map(c => c.value);
+  const extra   = document.getElementById('ai-extra').value.trim();
+  const prompt  = buildDiscoveryPrompt({ grade, country, subjects, extra });
+  const showSuccess = () => {
+    const msg = document.getElementById('ai-discover-copy-success');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  };
+  navigator.clipboard.writeText(prompt).then(showSuccess).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = prompt; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showSuccess();
   });
 });
 
@@ -1658,6 +1746,60 @@ RULES:
 - Use null for deadline if you genuinely cannot find it; use "deadlineLabel" for approximate info
 - priority: High = prestigious/highly competitive/significant opportunity; Medium = solid option; Low = niche or lower stakes
 - Do NOT include any text outside the JSON code block${listSection}Research each item above and return the JSON array. Include all the competitions listed.`;
+}
+
+function buildDiscoveryPrompt({ grade, country, subjects, extra }) {
+  const catList = categories.join(', ');
+  const today = new Date().toISOString().slice(0,10);
+  const subjectLine = subjects.length ? subjects.join(', ') : 'all subjects';
+  const extraLine = extra ? `\nAdditional context about me: ${extra}` : '';
+  return `You are helping me discover competitions, programs, fellowships, and research opportunities I should know about.
+
+MY PROFILE:
+- Grade / Year: ${grade}
+- Country: ${country}
+- Subjects / Interests: ${subjectLine}${extraLine}
+
+TODAY'S DATE: ${today}
+
+YOUR TASK:
+Go deep. Don't just list the obvious top competitions — think comprehensively across every subject I listed. Cover:
+- Prestigious flagship competitions (olympiads, major science fairs, essay contests)
+- Research and lab programs (summer, year-round, online)
+- Fellowships and scholarships open to pre-college or early undergrad students
+- Lesser-known gems that are genuinely worth pursuing
+- Both highly competitive and more accessible options (include the full spectrum)
+- Competitions that are global/open-to-all AND country-specific ones relevant to ${country}
+
+Include entries with upcoming deadlines AND annual recurring competitions even if the current application cycle hasn't opened yet — I want to know about everything so I can plan ahead.
+
+OUTPUT FORMAT — return ONLY a JSON code block, no other text:
+\`\`\`json
+[
+  {
+    "name": "Full official competition name",
+    "pipeline": "Stage1 → Stage2 → Stage3  (leave empty string if not a multi-stage track)",
+    "type": "Competition | Program | Fellowship | Other",
+    "category": "one of: ${catList}  (pick the best match, or use Other)",
+    "deadline": "YYYY-MM-DD  (next upcoming deadline or most recent known cycle date, or null if genuinely unknown)",
+    "deadlineLabel": "Human-readable note, e.g. 'Registration: Sep 15' or '~Mar–Apr annually'",
+    "eligibility": "Be specific: age range, grade, country restrictions, citizenship requirements",
+    "notes": "2–3 sentences: what it is, what makes it worth pursuing, any key things to know",
+    "status": "Contemplating",
+    "priority": "High | Medium | Low"
+  }
+]
+\`\`\`
+
+RULES:
+- If a competition has multi-round stages, list the FIRST stage deadline in "deadline" and the full pipeline in "pipeline"
+- Use null for deadline only if you truly cannot find any date — use "deadlineLabel" for approximate cycles
+- priority: High = prestigious / significant for college apps / rare opportunity; Medium = solid; Low = niche or lower stakes
+- Include eligibility honestly — flag if ${country} students are ineligible for something
+- Aim for 15–25 entries covering the full breadth of my subjects. Quality over quantity — every entry should be genuinely worth my attention.
+- Do NOT include any text outside the JSON code block
+
+Now produce the JSON array of competitions and opportunities for my profile.`;
 }
 
 // ── INDEXED DB BACKUP ─────────────────────────────────────────────────────────
