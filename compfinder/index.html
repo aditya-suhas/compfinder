@@ -371,6 +371,7 @@ tr.row-skipped td { opacity: 0.38; }
 .elig-text  { color: var(--text2); font-size: 13px; line-height: 1.6; }
 .entry-url  { color: var(--accent2); font-size: 12px; font-family: var(--font-mono); text-decoration: none; word-break: break-all; }
 .entry-url:hover { text-decoration: underline; }
+.last-cycled-text { font-size: 12px; font-family: var(--font-mono); color: var(--text3); }
 
 /* Checklist */
 .checklist { list-style: none; }
@@ -1193,6 +1194,7 @@ function renderTable() {
         ${e.notes ? `<div class="expand-section" style="flex:2"><h4>Notes</h4><div class="notes-text">${esc(e.notes)}</div></div>` : ''}
         ${e.eligibility ? `<div class="expand-section"><h4>Eligibility</h4><div class="elig-text">${esc(e.eligibility)}</div></div>` : ''}
         ${e.url ? `<div class="expand-section"><h4>Website</h4><a href="${esc(e.url)}" target="_blank" rel="noopener" class="entry-url">${esc(e.url.replace(/^https?:\/\/(www\.)?/,''))}</a></div>` : ''}
+        ${e.lastCycled ? `<div class="expand-section"><h4>Last cycle</h4><div class="last-cycled-text">&#8635; ${esc(e.lastCycled)}</div></div>` : ''}
         <div class="expand-section">
           <h4>Prep Checklist${cl.length?` <span style="color:var(--text3);font-weight:400">(${clDone}/${cl.length})</span>`:''}</h4>
           <ul class="checklist">
@@ -1882,6 +1884,7 @@ function cyclePastDeadlines() {
     if (!e.deadline) return;
     const d = new Date(e.deadline); d.setHours(0,0,0,0);
     if (d >= today) return;
+    e.lastCycled = e.deadline; // store the original past deadline before advancing
     while (d < today) d.setFullYear(d.getFullYear() + 1);
     e.deadline = d.toISOString().slice(0, 10);
     e.status   = 'Contemplating';
