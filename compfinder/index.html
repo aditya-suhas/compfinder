@@ -1857,6 +1857,7 @@ async function initFileSync() {
     entries = restored;
     if (!Array.isArray(data) && data.categories) { categories = data.categories; saveCats(categories); }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); // repopulate localStorage
+    cyclePastDeadlines();
     renderAll();
     const bw = document.getElementById('banner-wrap');
     bw.innerHTML = `<div class="banner" style="border-left-color:var(--green);background:var(--green-bg);border-color:rgba(46,213,115,0.2)">
@@ -1871,6 +1872,24 @@ async function initFileSync() {
   } catch {}
 }
 
+// ── CYCLE PAST DEADLINES ──────────────────────────────────────────────────────
+// On every load: if a deadline has passed, advance it by full years until it's
+// in the future and reset status to Contemplating (annual-cycle behaviour).
+function cyclePastDeadlines() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let changed = false;
+  entries.forEach(e => {
+    if (!e.deadline) return;
+    const d = new Date(e.deadline); d.setHours(0,0,0,0);
+    if (d >= today) return;
+    while (d < today) d.setFullYear(d.getFullYear() + 1);
+    e.deadline = d.toISOString().slice(0, 10);
+    e.status   = 'Contemplating';
+    changed = true;
+  });
+  if (changed) save(entries);
+}
+
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeModal(); closeConfirm(); closeCatModal(); closeImportModal(); closeAIModal(); }
@@ -1879,6 +1898,7 @@ document.addEventListener('keydown', e => {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadFilters();
+cyclePastDeadlines();
 renderAll();
 initFileSync();
 </script>
