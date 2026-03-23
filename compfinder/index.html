@@ -23,13 +23,18 @@
   --text3:     #36486a;
   --accent:    #1e8fff;
   --accent2:   #5ab5ff;
-  --accent-glow: rgba(30,143,255,0.18);
+  --accent-glow: rgba(30,143,255,0.22);
   --red:       #ff4757;
   --red-bg:    #1c080f;
   --amber:     #ffa502;
   --amber-bg:  #1c1008;
   --green:     #2ed573;
   --green-bg:  #081c10;
+  --purple:      #7c3aed;
+  --purple-glow: rgba(124,58,237,0.15);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md:   0 8px 32px rgba(0,0,0,0.5);
+  --shadow-lg:   0 20px 60px rgba(0,0,0,0.6);
   --radius:    7px;
   --radius-lg: 12px;
   --font-ui:      'DM Sans', system-ui, sans-serif;
@@ -42,8 +47,10 @@
 
 body {
   background-color: var(--bg);
-  background-image: radial-gradient(rgba(30,143,255,0.055) 1.5px, transparent 1.5px);
-  background-size: 26px 26px;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(30,143,255,0.08) 0%, transparent 65%),
+    radial-gradient(rgba(30,143,255,0.05) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 26px 26px;
   color: var(--text);
   font-family: var(--font-ui);
   font-size: 14px;
@@ -71,10 +78,11 @@ body {
   white-space: nowrap;
 }
 .header h1 span {
-  background: linear-gradient(125deg, var(--accent) 0%, var(--accent2) 100%);
+  background: linear-gradient(125deg, var(--accent) 0%, var(--purple) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(30,143,255,0.3));
 }
 
 /* Search */
@@ -107,16 +115,19 @@ body {
   color: var(--text2);
   font-size: 13px; font-family: var(--font-ui); font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
-.btn:hover { background: var(--bg4); border-color: var(--border3); color: var(--text); }
+.btn:hover { background: var(--bg4); border-color: var(--border3); color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:active { transform: translateY(0); box-shadow: none; }
 .btn-primary {
-  background: var(--accent); border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #3d9fff 100%);
+  border-color: var(--accent);
   color: #fff; font-weight: 600;
-  box-shadow: 0 2px 14px rgba(30,143,255,0.28);
+  box-shadow: 0 2px 16px rgba(30,143,255,0.32);
 }
-.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); box-shadow: 0 2px 20px rgba(30,143,255,0.4); }
+.btn-primary:hover { background: linear-gradient(135deg, #3d9fff 0%, var(--purple) 100%); border-color: #3d9fff; box-shadow: 0 4px 24px rgba(30,143,255,0.45); transform: translateY(-1px); }
 .btn-danger { border-color: var(--red); color: var(--red); background: transparent; }
 .btn-danger:hover { background: var(--red-bg); }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
@@ -132,6 +143,9 @@ body {
   padding: 13px 16px;
   margin-bottom: 14px;
   display: flex; align-items: flex-start; gap: 12px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .banner-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
 .banner-content { flex: 1; }
@@ -156,22 +170,24 @@ body {
   padding: 12px 10px;
   margin-bottom: 14px;
   overflow-x: auto;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.03);
 }
-.tl-col { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 2px; border-radius: 6px; }
-.tl-col.tl-current { background: rgba(30,143,255,0.07); }
+.tl-col { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 4px 2px; border-radius: 8px; transition: background 0.15s; }
+.tl-col.tl-current { background: rgba(30,143,255,0.1); }
 .tl-month {
   font-family: var(--font-mono);
   font-size: 9px; font-weight: 600;
   color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase;
-  padding: 0 0 6px; text-align: center;
+  padding: 0 0 7px; text-align: center; white-space: nowrap;
 }
 .tl-col.tl-current .tl-month { color: var(--accent2); }
-.tl-dots { display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 18px; }
-.tl-dot { font-size: 10px; cursor: pointer; transition: transform 0.12s, filter 0.12s; line-height: 1; }
-.tl-dot:hover { transform: scale(1.7); }
-.tl-dot.urg-red   { color: var(--red);   filter: drop-shadow(0 0 5px rgba(255,71,87,0.7)); }
-.tl-dot.urg-amber { color: var(--amber); filter: drop-shadow(0 0 3px rgba(255,165,2,0.4)); }
-.tl-dot.urg-green { color: var(--green); }
+.tl-year { font-size: 7px; color: var(--accent2); margin-left: 1px; vertical-align: super; opacity: 0.8; }
+.tl-dots { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 18px; }
+.tl-dot { font-size: 11px; cursor: pointer; transition: transform 0.12s, filter 0.12s; line-height: 1; }
+.tl-dot:hover { transform: scale(1.8); }
+.tl-dot.urg-red   { color: var(--red);   filter: drop-shadow(0 0 6px rgba(255,71,87,0.8)); }
+.tl-dot.urg-amber { color: var(--amber); filter: drop-shadow(0 0 5px rgba(255,165,2,0.6)); }
+.tl-dot.urg-green { color: var(--green); filter: drop-shadow(0 0 4px rgba(46,213,115,0.4)); }
 .tl-dot.urg-grey  { color: var(--text3); }
 .tl-dot.tl-past   { opacity: 0.25; cursor: default; filter: none; }
 .tl-dot.tl-past:hover { transform: none; }
@@ -211,15 +227,25 @@ body {
   border-bottom: 1px solid var(--border);
 }
 .type-tab {
-  padding: 9px 17px;
+  padding: 9px 18px;
   font-size: 13px; font-family: var(--font-ui); font-weight: 500;
   color: var(--text3); cursor: pointer; border: none; background: none;
   border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.18s, border-color 0.18s;
   white-space: nowrap;
 }
 .type-tab:hover { color: var(--text2); }
-.type-tab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 600; }
+.type-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.type-tab.active::after {
+  content: '';
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 7px;
+  vertical-align: middle;
+  opacity: 0.75;
+}
 
 /* ── CATEGORY FILTERS ───────────────────────────────────────────────────────── */
 .filter-row { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -243,10 +269,10 @@ body {
   overflow-x: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  box-shadow: 0 4px 32px rgba(0,0,0,0.35);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(30,143,255,0.05);
 }
 table { width: 100%; border-collapse: collapse; }
-thead { background: var(--bg2); }
+thead { background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%); }
 th {
   padding: 11px 16px;
   font-family: var(--font-mono); font-size: 9.5px; font-weight: 600;
@@ -258,12 +284,13 @@ th.sortable:hover { color: var(--text2); }
 
 tbody tr {
   border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
+  transition: background 0.15s;
   animation: row-enter 0.2s ease both;
 }
 tbody tr:last-child { border-bottom: none; }
 tbody tr.expanded { border-bottom: none; }
-tbody tr:hover > td { background: rgba(30,143,255,0.04); }
+tbody tr:hover > td { background: rgba(30,143,255,0.05); }
+tbody tr:hover > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 
 @keyframes row-enter {
   from { opacity: 0; transform: translateY(3px); }
@@ -287,10 +314,10 @@ td { padding: 12px 16px; vertical-align: middle; }
 
 /* Entry name cell */
 .entry-name {
-  font-weight: 600; font-size: 13.5px;
+  font-weight: 600; font-size: 13.5px; color: var(--text);
   display: flex; align-items: center; gap: 7px;
   cursor: pointer; user-select: none;
-  transition: color 0.12s;
+  transition: color 0.18s;
 }
 .entry-name:hover { color: var(--accent2); }
 .expand-arrow { font-size: 9px; color: var(--text3); transition: transform 0.15s; flex-shrink: 0; }
@@ -335,12 +362,12 @@ td { padding: 12px 16px; vertical-align: middle; }
 /* Priority */
 .pri-badge {
   display: inline-block;
-  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
-  padding: 3px 9px; border-radius: 4px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.4px;
+  padding: 3px 10px; border-radius: 5px;
 }
-.pri-High   { background: rgba(255,71,87,0.12);  color: var(--red);   border: 1px solid rgba(255,71,87,0.28); }
-.pri-Medium { background: rgba(255,165,2,0.1);   color: var(--amber); border: 1px solid rgba(255,165,2,0.25); }
-.pri-Low    { background: rgba(46,213,115,0.08); color: var(--green); border: 1px solid rgba(46,213,115,0.22); }
+.pri-High   { background: rgba(255,71,87,0.14);  color: var(--red);   border: 1px solid rgba(255,71,87,0.32); }
+.pri-Medium { background: rgba(255,165,2,0.12);  color: var(--amber); border: 1px solid rgba(255,165,2,0.3);  }
+.pri-Low    { background: rgba(46,213,115,0.1);  color: var(--green); border: 1px solid rgba(46,213,115,0.28); }
 
 /* Status select */
 .status-select {
@@ -348,10 +375,15 @@ td { padding: 12px 16px; vertical-align: middle; }
   color: var(--text); border-radius: var(--radius);
   padding: 5px 9px; font-size: 12px; font-family: var(--font-ui);
   cursor: pointer; outline: none; width: 100%; max-width: 138px;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 .status-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .status-select option { background: var(--bg2); }
+.status-select.status-Contemplating { color: var(--text2); }
+.status-select.status-Committed     { color: var(--accent2); border-color: rgba(30,143,255,0.35); }
+.status-select.status-Doing         { color: var(--amber);   border-color: rgba(255,165,2,0.35); }
+.status-select.status-Done          { color: var(--green);   border-color: rgba(46,213,115,0.35); }
+.status-select.status-Skipped       { color: var(--text3); }
 
 /* Skipped rows */
 tr.row-skipped td { opacity: 0.38; }
@@ -372,6 +404,12 @@ tr.row-skipped td { opacity: 0.38; }
 .entry-url  { color: var(--accent2); font-size: 12px; font-family: var(--font-mono); text-decoration: none; word-break: break-all; }
 .entry-url:hover { text-decoration: underline; }
 .last-cycled-text { font-size: 12px; font-family: var(--font-mono); color: var(--text3); }
+
+/* ── SCROLLBAR ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border3); }
 
 /* Checklist */
 .checklist { list-style: none; }
@@ -413,10 +451,10 @@ tr.row-skipped td { opacity: 0.38; }
   z-index: 100; padding: 20px;
 }
 .modal {
-  background: var(--bg2);
+  background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
   border: 1px solid var(--border2);
   border-radius: var(--radius-lg);
-  box-shadow: 0 28px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(30,143,255,0.06);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(30,143,255,0.08);
   width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: 26px;
   animation: modal-enter 0.2s ease;
 }
@@ -963,8 +1001,8 @@ function daysUntil(d) {
 function urgClass(d) {
   const n = daysUntil(d);
   if (n === null) return 'urg-grey';
-  if (n <= 30) return 'urg-red';
-  if (n <= 90) return 'urg-amber';
+  if (n <= 14) return 'urg-red';
+  if (n <= 60) return 'urg-amber';
   return 'urg-green';
 }
 function daysLabel(d) {
@@ -1035,32 +1073,38 @@ function renderBanner() {
 // ── TIMELINE ──────────────────────────────────────────────────────────────────
 function renderTimeline() {
   const tl = document.getElementById('timeline');
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const now = new Date(); now.setHours(0,0,0,0);
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  const byMonth = Array.from({length: 12}, () => []);
+  // Rolling 12-slot window starting from current month
+  const slots = Array.from({length: 12}, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+
+  const bySlot = Array.from({length: 12}, () => []);
   entries.forEach(e => {
     if (!e.deadline) return;
     const d = new Date(e.deadline);
-    if (d.getFullYear() !== currentYear) return;
-    byMonth[d.getMonth()].push(e);
+    const idx = slots.findIndex(s => s.year === d.getFullYear() && s.month === d.getMonth());
+    if (idx !== -1) bySlot[idx].push(e);
   });
 
-  if (!byMonth.some(m => m.length > 0)) { tl.innerHTML = ''; return; }
+  if (!bySlot.some(m => m.length > 0)) { tl.innerHTML = ''; return; }
 
-  tl.innerHTML = MONTHS.map((month, mi) => {
-    const isCurrent = mi === currentMonth;
-    const dots = byMonth[mi].map(e => {
+  tl.innerHTML = slots.map(({year, month}, i) => {
+    const isCurrent = i === 0;
+    const yearSuffix = (month === 0 && i > 0)
+      ? `<span class="tl-year">'${String(year).slice(2)}</span>` : '';
+    const dots = bySlot[i].map(e => {
       const days = daysUntil(e.deadline);
-      const urg = urgClass(e.deadline);
+      const urg  = urgClass(e.deadline);
       const isPast = days !== null && days < 0;
-      const tip = e.name + (days !== null ? ' \u2014 ' + daysLabel(e.deadline) : '');
+      const tip  = e.name + (days !== null ? ' \u2014 ' + daysLabel(e.deadline) : '');
       return `<span class="tl-dot ${urg}${isPast?' tl-past':''}" data-tl-id="${esc(e.id)}" title="${esc(tip)}">&#9679;</span>`;
     }).join('');
     return `<div class="tl-col${isCurrent?' tl-current':''}">
-      <div class="tl-month">${month}</div>
+      <div class="tl-month">${MONTHS[month]}${yearSuffix}</div>
       <div class="tl-dots">${dots}</div>
     </div>`;
   }).join('');
@@ -1179,7 +1223,7 @@ function renderTable() {
       </td>
       <td><span class="pri-badge pri-${esc(e.priority)}">${esc(e.priority)}</span></td>
       <td>
-        <select class="status-select" data-action="status" data-id="${esc(e.id)}">
+        <select class="status-select status-${esc(e.status)}" data-action="status" data-id="${esc(e.id)}">
           ${STATUSES.map(s=>`<option value="${s}"${e.status===s?' selected':''}>${s}</option>`).join('')}
         </select>
       </td>
