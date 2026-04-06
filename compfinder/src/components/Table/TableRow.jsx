@@ -50,14 +50,12 @@ export function TableRow({
             ? { x: [0, -6, 6, -4, 4, 0], opacity: 1 }
             : { opacity: 1, x: 0 }
         }
-        exit={{ opacity: 0, scale: 0.96, y: -4 }}
+        exit={{ opacity: 0, x: -8 }}
         transition={
           shaking
-            ? { duration: 0.45, times: [0, 0.2, 0.4, 0.6, 0.8, 1] }
-            : { duration: 0.22, delay: index * 0.02, ease: [0.4, 0, 0.2, 1] }
+            ? { duration: 0.4, times: [0, 0.2, 0.4, 0.6, 0.8, 1] }
+            : { duration: 0.2, delay: index * 0.02, ease: [0.4, 0, 0.2, 1] }
         }
-        whileHover={{ backgroundColor: 'var(--surface2)' }}
-        layout
       >
         {/* Time-drain + name */}
         <td className={styles.nameCell}>
@@ -172,26 +170,26 @@ export function TableRow({
         </td>
       </motion.tr>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isExpanded && (
-          <motion.tr
-            key={`${entry.id}-expanded`}
-            className={styles.expandRow}
-            initial={{ opacity: 0, scaleY: 0.95 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            exit={{ opacity: 0, scaleY: 0.95 }}
-            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-            style={{ originY: 0 }}
-          >
+          <tr key={`${entry.id}-expanded`} className={styles.expandRow}>
             <td colSpan={5} style={{ padding: 0 }}>
-              <ExpandedRow
-                entry={entry}
-                onToggleCheck={onToggleCheck}
-                onDeleteCheck={onDeleteCheck}
-                onAddCheck={onAddCheck}
-              />
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <ExpandedRow
+                  entry={entry}
+                  onToggleCheck={onToggleCheck}
+                  onDeleteCheck={onDeleteCheck}
+                  onAddCheck={onAddCheck}
+                />
+              </motion.div>
             </td>
-          </motion.tr>
+          </tr>
         )}
       </AnimatePresence>
     </>
