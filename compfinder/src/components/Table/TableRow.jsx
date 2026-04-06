@@ -170,15 +170,22 @@ export function TableRow({
         </td>
       </motion.tr>
 
-      <AnimatePresence initial={false}>
+      <AnimatePresence>
         {isExpanded && (
           <tr key={`${entry.id}-expanded`} className={styles.expandRow}>
             <td colSpan={5} style={{ padding: 0 }}>
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+                variants={{
+                  open:   { height: 'auto', opacity: 1 },
+                  closed: { height: 0,      opacity: 0 },
+                }}
+                initial="closed"
+                animate="open"
+                exit="closed"
+                transition={{
+                  height:  { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+                  opacity: { duration: 0.18 },
+                }}
                 style={{ overflow: 'hidden' }}
               >
                 <ExpandedRow

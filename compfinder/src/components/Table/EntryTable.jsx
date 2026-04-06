@@ -1,4 +1,5 @@
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { TableRow } from './TableRow.jsx';
 import { Plus } from 'lucide-react';
 import { Button } from '../ui/Button.jsx';
@@ -67,7 +68,8 @@ export function EntryTable({
               </td>
             </tr>
           ) : (
-            filteredEntries.map((entry, i) => (
+            <AnimatePresence initial={false}>
+            {filteredEntries.map((entry, i) => (
               <TableRow
                 key={entry.id}
                 entry={entry}
@@ -82,7 +84,8 @@ export function EntryTable({
                 onDeleteCheck={onDeleteCheck}
                 onAddCheck={onAddCheck}
               />
-            ))
+            ))}
+          </AnimatePresence>
           )}
         </tbody>
       </table>
