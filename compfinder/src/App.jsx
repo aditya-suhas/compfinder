@@ -53,7 +53,7 @@ export default function App() {
     commitImport({ entries: remoteEntries, categories: remoteCats }, 'replace');
   }, [commitImport]);
 
-  const { code: syncCode, status: syncStatus, switchCode, regenerateCode, syncEnabled: isSyncEnabled } = useSync({
+  const { code: syncCode, status: syncStatus, setPassphrase, disconnect, syncEnabled: isSyncEnabled } = useSync({
     entries,
     categories,
     onRemoteUpdate,
@@ -229,8 +229,8 @@ export default function App() {
         <SyncModal
           code={syncCode}
           status={syncStatus}
-          onSwitchCode={switchCode}
-          onRegenerate={regenerateCode}
+          onSetPassphrase={setPassphrase}
+          onDisconnect={disconnect}
           onClose={closeModal}
         />
       )}

@@ -73,7 +73,7 @@ export function Header({
           <span className={styles.logoFinder}>Finder</span>
         </motion.div>
         {syncCode && (
-          <span className={styles.syncCode} title="Your sync code — enter on another device">
+          <span className={styles.syncCode} title={`Syncing as "${syncCode}"`}>
             {syncCode}
           </span>
         )}
@@ -106,7 +106,7 @@ export function Header({
         <ThemeToggle theme={theme} onToggle={onThemeToggle} />
 
         {onSync && (
-          <MagneticButton onClick={onSync} title={syncCode ? `Sync code: ${syncCode}` : 'Enable sync'} variant="ghost" size="sm">
+          <MagneticButton onClick={onSync} title={syncCode ? `Syncing as "${syncCode}"` : 'Set up sync'} variant="ghost" size="sm">
             <RefreshCw size={13} /> Sync
           </MagneticButton>
         )}

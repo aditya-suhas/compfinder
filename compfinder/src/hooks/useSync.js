@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { syncEnabled } from '../lib/supabase.js';
-import { getOrCreateCode, setCode, clearCode, pushSync, pullSync, subscribeSync } from '../lib/syncService.js';
+import { getCode, setCode, clearCode, pushSync, pullSync, subscribeSync } from '../lib/syncService.js';
 
 const DEBOUNCE_MS = 1500;
 
 export function useSync({ entries, categories, onRemoteUpdate }) {
-  const [code, setCodeState]     = useState(() => syncEnabled ? getOrCreateCode() : null);
-  const [status, setStatus]      = useState(syncEnabled ? 'idle' : 'disabled');
-  const debounceRef              = useRef(null);
-  const isLocalChange            = useRef(false);
-  const mounted                  = useRef(true);
+  const [code, setCodeState]  = useState(() => syncEnabled ? getCode() : null);
+  const [status, setStatus]   = useState(() => {
+    if (!syncEnabled) return 'disabled';
+    return getCode() ? 'idle' : 'inactive';
+  });
+  const debounceRef           = useRef(null);
+  const mounted               = useRef(true);
 
-  // Initial pull on mount
+  // Initial pull on mount (only if a passphrase is already saved)
   useEffect(() => {
     if (!syncEnabled || !code) return;
     pullSync(code).then(data => {
@@ -27,7 +29,6 @@ export function useSync({ entries, categories, onRemoteUpdate }) {
     if (!syncEnabled || !code) return;
     const unsub = subscribeSync(code, (data) => {
       if (!mounted.current) return;
-      isLocalChange.current = false;
       onRemoteUpdate(data.entries, data.categories);
       setStatus('synced');
     });
@@ -47,35 +48,33 @@ export function useSync({ entries, categories, onRemoteUpdate }) {
     return () => clearTimeout(debounceRef.current);
   }, [entries, categories, code]);
 
-  const switchCode = useCallback(async (newCode) => {
-    setCode(newCode);
-    setCodeState(newCode);
+  /** Set a user-chosen passphrase and start syncing */
+  const setPassphrase = useCallback(async (phrase) => {
+    const key = phrase.toLowerCase().trim();
+    setCode(key);
+    setCodeState(key);
     setStatus('syncing');
-    const data = await pullSync(newCode);
+    const data = await pullSync(key);
     if (data) {
       onRemoteUpdate(data.entries, data.categories);
-      setStatus('synced');
     } else {
-      // New code — push current data to claim it
-      await pushSync(newCode, entries, categories);
-      setStatus('synced');
+      await pushSync(key, entries, categories);
     }
+    if (mounted.current) setStatus('synced');
   }, [entries, categories, onRemoteUpdate]);
 
-  const regenerateCode = useCallback(async () => {
+  /** Stop syncing and clear the saved passphrase */
+  const disconnect = useCallback(() => {
     clearCode();
-    const newCode = getOrCreateCode();
-    setCodeState(newCode);
-    setStatus('syncing');
-    await pushSync(newCode, entries, categories);
-    setStatus('synced');
-  }, [entries, categories]);
+    setCodeState(null);
+    setStatus('inactive');
+  }, []);
 
   return {
     code,
     status,
-    switchCode,
-    regenerateCode,
+    setPassphrase,
+    disconnect,
     syncEnabled,
   };
 }

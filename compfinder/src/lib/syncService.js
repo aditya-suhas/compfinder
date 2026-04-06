@@ -23,25 +23,14 @@ import { supabase, syncEnabled } from './supabase.js';
 
 const CODE_KEY = 'compfinder_sync_code';
 
-/** Generate a random 8-char uppercase alphanumeric code */
-function genCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+/** Returns saved passphrase or null if sync is not set up */
+export function getCode() {
+  return localStorage.getItem(CODE_KEY) || null;
 }
 
-/** Load or create a sync code */
-export function getOrCreateCode() {
-  let code = localStorage.getItem(CODE_KEY);
-  if (!code) {
-    code = genCode();
-    localStorage.setItem(CODE_KEY, code);
-  }
-  return code;
-}
-
-/** Persist a different sync code (switching devices) */
+/** Save a passphrase (lowercased, trimmed) */
 export function setCode(code) {
-  localStorage.setItem(CODE_KEY, code.toUpperCase().trim());
+  localStorage.setItem(CODE_KEY, code.toLowerCase().trim());
 }
 
 export function clearCode() {

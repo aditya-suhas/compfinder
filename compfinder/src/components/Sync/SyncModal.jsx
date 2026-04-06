@@ -2,96 +2,94 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ModalBase } from '../Modals/ModalBase.jsx';
 import { Button } from '../ui/Button.jsx';
-import { Copy, Check, RefreshCw, Smartphone, Monitor } from 'lucide-react';
+import { Cloud, CloudOff, Loader2 } from 'lucide-react';
 import styles from './SyncModal.module.css';
 
-export function SyncModal({ code, status, onSwitchCode, onRegenerate, onClose }) {
-  const [newCode, setNewCode]   = useState('');
-  const [copied, setCopied]     = useState(false);
-  const [codeError, setCodeError] = useState('');
+export function SyncModal({ code, status, onSetPassphrase, onDisconnect, onClose }) {
+  const [input, setInput]   = useState('');
+  const [error, setError]   = useState('');
+  const [editing, setEditing] = useState(!code);
 
-  const copyCode = async () => {
-    try { await navigator.clipboard.writeText(code); }
-    catch { const ta = document.createElement('textarea'); ta.value = code; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSwitch = async () => {
-    const trimmed = newCode.trim().toUpperCase();
-    if (trimmed.length < 4) { setCodeError('Code must be at least 4 characters'); return; }
-    setCodeError('');
-    await onSwitchCode(trimmed);
+  const handleConnect = async () => {
+    const trimmed = input.trim();
+    if (trimmed.length < 2) { setError('Enter at least 2 characters'); return; }
+    setError('');
+    await onSetPassphrase(trimmed);
     onClose();
   };
 
-  return (
-    <ModalBase title="Sync across devices" onClose={onClose} width={480}>
-      <div className={styles.content}>
-        {/* Your code */}
-        <div className={styles.section}>
-          <p className={styles.sectionTitle}>Your sync code</p>
-          <p className={styles.desc}>
-            Enter this code on another device to sync your data in real time.
-          </p>
-          <div className={styles.codeDisplay}>
-            <span className={styles.code}>{code}</span>
-            <motion.button
-              className={styles.copyBtn}
-              onClick={copyCode}
-              whileTap={{ scale: 0.9 }}
-              title="Copy code"
+  // ── Connected state ──
+  if (code && !editing) {
+    return (
+      <ModalBase title="Sync" onClose={onClose} width={400}>
+        <div className={styles.content}>
+          <div className={styles.connectedCard}>
+            <motion.div
+              className={`${styles.statusRow} ${status === 'synced' ? styles.statusSynced : status === 'error' ? styles.statusError : styles.statusSyncing}`}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
             >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-            </motion.button>
+              {status === 'syncing' ? <Loader2 size={14} className={styles.spin} /> :
+               status === 'synced'  ? <Cloud size={14} /> :
+               <CloudOff size={14} />}
+              <span>{status === 'syncing' ? 'Syncing…' : status === 'synced' ? 'Synced' : 'Offline'}</span>
+            </motion.div>
+
+            <div className={styles.passphraseBlock}>
+              <span className={styles.passphraseLabel}>Passphrase</span>
+              <span className={styles.passphrase}>{code}</span>
+            </div>
+
+            <p className={styles.hint}>
+              Any device using this passphrase stays in sync automatically.
+            </p>
           </div>
-          <button
-            className={styles.regenLink}
-            onClick={onRegenerate}
-            title="Generate a fresh sync code (disconnects other devices)"
-          >
-            <RefreshCw size={11} /> Generate new code
-          </button>
-        </div>
 
-        <div className={styles.divider}>
-          <span>or join a different device</span>
-        </div>
-
-        {/* Enter code */}
-        <div className={styles.section}>
-          <p className={styles.sectionTitle}>Enter another device's code</p>
-          <div className={styles.inputRow}>
-            <input
-              className={`${styles.input} ${codeError ? styles.inputError : ''}`}
-              value={newCode}
-              onChange={e => { setNewCode(e.target.value.toUpperCase()); setCodeError(''); }}
-              placeholder="e.g. XK7MN2QP"
-              maxLength={12}
-              onKeyDown={e => { if (e.key === 'Enter') handleSwitch(); }}
-            />
-            <Button variant="primary" size="sm" onClick={handleSwitch}>
-              Connect
+          <div className={styles.btnRow}>
+            <Button variant="secondary" size="sm" onClick={() => { setEditing(true); setInput(''); }}>
+              Change passphrase
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => { onDisconnect(); onClose(); }}>
+              Stop syncing
             </Button>
           </div>
-          {codeError && <p className={styles.error}>{codeError}</p>}
+        </div>
+      </ModalBase>
+    );
+  }
+
+  // ── Setup / edit state ──
+  return (
+    <ModalBase title="Sync across devices" onClose={onClose} width={420}>
+      <div className={styles.content}>
+        <p className={styles.desc}>
+          Pick any word or phrase you'll remember — like <em>family</em> or <em>ourlist</em>.
+          Enter the <strong>same passphrase</strong> on every device to keep your data in sync.
+        </p>
+
+        <div className={styles.inputRow}>
+          <input
+            className={`${styles.input} ${error ? styles.inputError : ''}`}
+            value={input}
+            onChange={e => { setInput(e.target.value); setError(''); }}
+            placeholder="e.g. family, ourlist, mymom…"
+            autoFocus
+            onKeyDown={e => { if (e.key === 'Enter') handleConnect(); }}
+          />
+          <Button variant="primary" size="sm" onClick={handleConnect}>
+            Start syncing
+          </Button>
         </div>
 
-        {/* How it works */}
-        <div className={styles.howItWorks}>
-          <div className={styles.device}>
-            <Monitor size={14} />
-            <span>This device</span>
-          </div>
-          <div className={styles.arrow}>⟷</div>
-          <div className={styles.device}>
-            <Smartphone size={14} />
-            <span>Other device</span>
-          </div>
-        </div>
-        <p className={styles.fine}>
-          Changes sync automatically. Last-write wins. No account needed.
-        </p>
+        {error && <p className={styles.error}>{error}</p>}
+
+        {code && (
+          <button className={styles.cancelLink} onClick={() => setEditing(false)}>
+            Cancel
+          </button>
+        )}
+
+        <p className={styles.fine}>No account needed. Works instantly on any browser or device.</p>
       </div>
     </ModalBase>
   );
