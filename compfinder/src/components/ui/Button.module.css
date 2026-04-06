@@ -1,0 +1,88 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--trans-fast),
+    border-color var(--trans-fast),
+    color var(--trans-fast),
+    box-shadow var(--trans-fast),
+    transform var(--trans-fast),
+    opacity var(--trans-fast);
+  user-select: none;
+}
+
+/* Sizes */
+.md { padding: 8px 14px; }
+.sm { padding: 5px 10px; font-size: 12px; gap: 4px; }
+
+/* Variants */
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text2);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--surface2);
+  border-color: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text3);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+.danger {
+  background: transparent;
+  border-color: var(--red-border);
+  color: var(--red);
+}
+.danger:hover:not(:disabled) {
+  background: var(--red-bg);
+}
+
+/* States */
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Loading spinner */
+.spinner {
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

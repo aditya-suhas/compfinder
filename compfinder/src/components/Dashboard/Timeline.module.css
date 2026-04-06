@@ -1,0 +1,107 @@
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp 300ms var(--ease) 100ms both;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 3px;
+  border-radius: var(--radius);
+  transition: background var(--trans-fast);
+}
+
+.col.current {
+  background: var(--accent-light);
+}
+
+.monthLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding-bottom: 8px;
+  text-align: center;
+  white-space: nowrap;
+  position: relative;
+}
+
+.current .monthLabel {
+  color: var(--accent);
+}
+
+.yearSuffix {
+  font-size: 7px;
+  color: var(--accent-mid);
+  vertical-align: super;
+  margin-left: 1px;
+}
+
+.dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+}
+
+.dotWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border-strong);
+  padding: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.dot:disabled {
+  pointer-events: none;
+}
+
+.ripple {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Urgency colors */
+.urg_red   { background: var(--red);   box-shadow: var(--glow-red); }
+.urg_amber { background: var(--amber); box-shadow: var(--glow-amber); }
+.urg_green { background: var(--green); box-shadow: var(--glow-green); }
+.urg_none  { background: var(--border-strong); }
+
+.dot.past {
+  opacity: 0.2;
+  box-shadow: none;
+}

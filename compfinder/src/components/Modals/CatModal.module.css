@@ -1,0 +1,92 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color var(--trans-fast);
+}
+.input::placeholder { color: var(--text4); }
+.input:focus { border-color: var(--accent); }
+
+.error {
+  font-size: 11px;
+  color: var(--red);
+  font-family: var(--font-mono);
+  margin-top: -6px;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  transition: background var(--trans-fast);
+}
+.item:hover { background: var(--surface2); }
+
+.catName {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.delBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--trans-fast), color var(--trans-fast), background var(--trans-fast);
+}
+.item:hover .delBtn { opacity: 1; }
+.delBtn:hover { color: var(--red); background: var(--red-bg); }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}

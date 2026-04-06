@@ -1,0 +1,193 @@
+.panel {
+  padding: 16px 20px 16px 36px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  animation: slideDown 200ms var(--ease) both;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+}
+
+.section {
+  flex: 1;
+  min-width: 160px;
+}
+
+.checklistSection {
+  min-width: 220px;
+  flex: 2;
+}
+
+.sectionTitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notes {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.elig {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+.url {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+.url:hover { text-decoration: underline; }
+
+.cycled {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text3);
+}
+
+/* Checklist */
+.checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.checkItem.done .checkText {
+  text-decoration: line-through;
+  color: var(--text3);
+}
+
+.checkBtn {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--trans-fast);
+  color: transparent;
+}
+
+.checkBtn:hover {
+  border-color: var(--accent);
+}
+
+.checkBtnDone {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.checkText {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.checkDel {
+  background: none;
+  border: none;
+  color: var(--text4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity var(--trans-fast), color var(--trans-fast);
+}
+
+.checkItem:hover .checkDel {
+  opacity: 1;
+}
+
+.checkDel:hover { color: var(--red); }
+
+/* Add task */
+.addTask {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.taskInput {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color var(--trans-fast);
+}
+
+.taskInput::placeholder { color: var(--text4); }
+.taskInput:focus { border-color: var(--accent); }
+
+.addTaskBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  flex-shrink: 0;
+}
+.addTaskBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.checkProg {
+  font-weight: 400;
+  color: var(--text4);
+}

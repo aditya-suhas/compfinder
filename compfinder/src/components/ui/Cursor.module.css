@@ -1,0 +1,81 @@
+.dot {
+  position: fixed;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 99999;
+  mix-blend-mode: normal;
+  transition: width 150ms ease, height 150ms ease, background 150ms ease, opacity 150ms ease;
+  will-change: transform;
+}
+
+.dotHovered {
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.dotClicking {
+  width: 5px;
+  height: 5px;
+  opacity: 0.8;
+}
+
+.ring {
+  position: fixed;
+  top: -18px;
+  left: -18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  pointer-events: none;
+  z-index: 99998;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 200ms ease, height 200ms ease, border-radius 200ms ease, opacity 200ms ease, border-color 200ms ease;
+  will-change: transform;
+}
+
+.ringHovered {
+  width: 48px;
+  height: 48px;
+  top: -24px;
+  left: -24px;
+  opacity: 0.7;
+  border-color: var(--accent);
+}
+
+.ringClicking {
+  width: 28px;
+  height: 28px;
+  top: -14px;
+  left: -14px;
+  opacity: 0.9;
+}
+
+.label {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--surface);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}

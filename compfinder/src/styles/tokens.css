@@ -1,0 +1,115 @@
+/* ── DESIGN TOKENS — ALL CSS VARIABLES ────────────────────────────────────── */
+/* No hardcoded hex values anywhere except this file. */
+
+:root {
+  /* Backgrounds */
+  --bg:       #F8F5F0;
+  --surface:  #FFFFFF;
+  --surface2: #F2EDE6;
+  --surface3: #EDE5DB;
+
+  /* Text */
+  --text:     #1A1917;
+  --text2:    #6B635A;
+  --text3:    #A09488;
+  --text4:    #C8BFB5;
+
+  /* Accent — deep espresso (interactive elements) */
+  --accent:       #5C4F44;
+  --accent-hover: #3D332A;
+  --accent-light: #E8DDD4;
+  --accent-mid:   #8C7B6E;
+
+  /* Borders */
+  --border:       #E5DDD5;
+  --border-strong: #C4B9AE;
+
+  /* Urgency colors — muted, non-flashy */
+  --red:       #B53D3D;
+  --red-bg:    rgba(181,61,61,0.07);
+  --red-border: rgba(181,61,61,0.2);
+  --amber:     #A86B2E;
+  --amber-bg:  rgba(168,107,46,0.07);
+  --green:     #2E7A6B;
+  --green-bg:  rgba(46,122,107,0.07);
+  --green-border: rgba(46,122,107,0.2);
+
+  /* Overlays */
+  --overlay:       rgba(26,25,23,0.5);
+  --overlay-dark:  rgba(0,0,0,0.6);
+
+  /* Glow shadows (for timeline dots) */
+  --glow-red:   0 0 6px rgba(181,61,61,0.4);
+  --glow-amber: 0 0 5px rgba(168,107,46,0.35);
+  --glow-green: 0 0 4px rgba(46,122,107,0.3);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(26,25,23,0.07);
+  --shadow-md: 0 4px 16px rgba(26,25,23,0.09);
+  --shadow-lg: 0 12px 40px rgba(26,25,23,0.11);
+
+  /* Radii */
+  --radius:    6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Typography */
+  --font-logo:    'Syne', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui:      'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* Spacing scale (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* Transitions */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --trans: 180ms var(--ease);
+  --trans-fast: 120ms var(--ease);
+}
+
+/* ── DARK MODE ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:       #14110E;
+  --surface:  #1E1A16;
+  --surface2: #262018;
+  --surface3: #2E2820;
+
+  --text:     #EDE6DC;
+  --text2:    #9B8E82;
+  --text3:    #635850;
+  --text4:    #4A3E36;
+
+  --accent:       #C4A882;
+  --accent-hover: #D4BA96;
+  --accent-light: #2A221A;
+  --accent-mid:   #9B7D5E;
+
+  --border:        #2A241F;
+  --border-strong: #3D342C;
+
+  --red:       #D46060;
+  --red-bg:    rgba(212,96,96,0.09);
+  --red-border: rgba(212,96,96,0.22);
+  --amber:     #C48040;
+  --amber-bg:  rgba(196,128,64,0.09);
+  --green:     #3A9482;
+  --green-bg:  rgba(58,148,130,0.09);
+  --green-border: rgba(58,148,130,0.22);
+
+  --overlay:       rgba(0,0,0,0.55);
+  --overlay-dark:  rgba(0,0,0,0.7);
+  --glow-red:   0 0 6px rgba(212,96,96,0.45);
+  --glow-amber: 0 0 5px rgba(196,128,64,0.4);
+  --glow-green: 0 0 4px rgba(58,148,130,0.35);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
+}
