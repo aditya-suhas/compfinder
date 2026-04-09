@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useTheme } from './hooks/useTheme.js';
 import { useStore } from './hooks/useStore.js';
 import { useSync } from './hooks/useSync.js';
@@ -237,6 +238,7 @@ export default function App() {
 
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
       <Cursor />
+      <SpeedInsights />
     </div>
   );
 }
