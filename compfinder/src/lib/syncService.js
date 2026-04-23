@@ -17,6 +17,9 @@
  *
  *   -- enable realtime
  *   alter publication supabase_realtime add table sync_data;
+ *
+ *   -- required: send full row on UPDATE events (not just the primary key)
+ *   alter table sync_data replica identity full;
  */
 
 import { supabase, syncEnabled } from './supabase.js';
@@ -37,17 +40,18 @@ export function clearCode() {
   localStorage.removeItem(CODE_KEY);
 }
 
-/** Push current state to Supabase */
+/** Push current state to Supabase. Returns true on success. */
 export async function pushSync(code, entries, categories) {
-  if (!syncEnabled || !supabase) return;
+  if (!syncEnabled || !supabase) return false;
   try {
-    await supabase.from('sync_data').upsert({
+    const { error } = await supabase.from('sync_data').upsert({
       code,
       entries,
       categories,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'code' });
-  } catch {}
+    return !error;
+  } catch { return false; }
 }
 
 /** Pull latest state from Supabase */
@@ -66,6 +70,7 @@ export async function pullSync(code) {
 
 /**
  * Subscribe to realtime changes on this code.
+ * Calls onUpdate() with no arguments — caller should do a fresh pullSync.
  * Returns an unsubscribe function.
  */
 export function subscribeSync(code, onUpdate) {
@@ -76,9 +81,7 @@ export function subscribeSync(code, onUpdate) {
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'sync_data', filter: `code=eq.${code}` },
-      (payload) => {
-        if (payload.new) onUpdate(payload.new);
-      }
+      () => { onUpdate(); }
     )
     .subscribe();
 

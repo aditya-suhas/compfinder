@@ -3,67 +3,91 @@ import { syncEnabled } from '../lib/supabase.js';
 import { getCode, setCode, clearCode, pushSync, pullSync, subscribeSync } from '../lib/syncService.js';
 
 const DEBOUNCE_MS = 1500;
+// Grace period after a push to suppress the realtime echo from our own write
+const ECHO_SUPPRESS_MS = 500;
 
 export function useSync({ entries, categories, onRemoteUpdate }) {
-  const [code, setCodeState]  = useState(() => syncEnabled ? getCode() : null);
-  const [status, setStatus]   = useState(() => {
+  const [code, setCodeState] = useState(() => syncEnabled ? getCode() : null);
+  const [status, setStatus]  = useState(() => {
     if (!syncEnabled) return 'disabled';
     return getCode() ? 'idle' : 'inactive';
   });
-  const debounceRef           = useRef(null);
-  const mounted               = useRef(true);
 
-  // Initial pull on mount (only if a passphrase is already saved)
+  const debounceRef  = useRef(null);
+  const mounted      = useRef(true);
+  const isPushing    = useRef(false);   // suppress realtime echo from our own push
+  const onUpdateRef  = useRef(onRemoteUpdate);
+
+  // Keep onUpdateRef current so subscription callback is never stale
+  useEffect(() => { onUpdateRef.current = onRemoteUpdate; }, [onRemoteUpdate]);
+
+  // Mark unmounted — separate from any effect cleanup so code changes don't flip it
+  useEffect(() => {
+    return () => { mounted.current = false; };
+  }, []);
+
+  // Pull on mount (or when code changes)
   useEffect(() => {
     if (!syncEnabled || !code) return;
+    let cancelled = false;
+    setStatus('syncing');
     pullSync(code).then(data => {
-      if (!mounted.current || !data) return;
-      onRemoteUpdate(data.entries, data.categories);
-      setStatus('synced');
+      if (cancelled || !mounted.current) return;
+      if (data) {
+        onUpdateRef.current(data.entries, data.categories);
+        setStatus('synced');
+      } else {
+        setStatus('idle');
+      }
     });
-    return () => { mounted.current = false; };
+    return () => { cancelled = true; };
   }, [code]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime changes
   useEffect(() => {
     if (!syncEnabled || !code) return;
-    const unsub = subscribeSync(code, (data) => {
-      if (!mounted.current) return;
-      onRemoteUpdate(data.entries, data.categories);
-      setStatus('synced');
+    const unsub = subscribeSync(code, () => {
+      // Ignore the echo from our own push
+      if (!mounted.current || isPushing.current) return;
+      // Don't trust payload — do a fresh pull (REPLICA IDENTITY may not be set)
+      pullSync(code).then(data => {
+        if (!mounted.current || !data) return;
+        onUpdateRef.current(data.entries, data.categories);
+        setStatus('synced');
+      });
     });
     return unsub;
   }, [code]);
 
   // Debounced push on local changes
   useEffect(() => {
-    if (!syncEnabled || !code || !entries.length) return;
+    if (!syncEnabled || !code) return;
     clearTimeout(debounceRef.current);
     setStatus('syncing');
     debounceRef.current = setTimeout(() => {
+      isPushing.current = true;
       pushSync(code, entries, categories)
-        .then(() => { if (mounted.current) setStatus('synced'); })
-        .catch(() => { if (mounted.current) setStatus('error'); });
+        .then(ok => {
+          if (mounted.current) setStatus(ok ? 'synced' : 'error');
+        })
+        .catch(() => {
+          if (mounted.current) setStatus('error');
+        })
+        .finally(() => {
+          // Clear after grace period so subscription ignores the resulting realtime event
+          setTimeout(() => { isPushing.current = false; }, ECHO_SUPPRESS_MS);
+        });
     }, DEBOUNCE_MS);
     return () => clearTimeout(debounceRef.current);
   }, [entries, categories, code]);
 
-  /** Set a user-chosen passphrase and start syncing */
-  const setPassphrase = useCallback(async (phrase) => {
+  // Set passphrase — just update the code; effects above handle pull + push automatically
+  const setPassphrase = useCallback((phrase) => {
     const key = phrase.toLowerCase().trim();
     setCode(key);
     setCodeState(key);
-    setStatus('syncing');
-    const data = await pullSync(key);
-    if (data) {
-      onRemoteUpdate(data.entries, data.categories);
-    } else {
-      await pushSync(key, entries, categories);
-    }
-    if (mounted.current) setStatus('synced');
-  }, [entries, categories, onRemoteUpdate]);
+  }, []);
 
-  /** Stop syncing and clear the saved passphrase */
   const disconnect = useCallback(() => {
     clearCode();
     setCodeState(null);
