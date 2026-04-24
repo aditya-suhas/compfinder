@@ -9,7 +9,7 @@ const PRIS = ['High', 'Medium', 'Low'];
 const EMPTY = {
   name: '', type: '', category: '', pipeline: '',
   deadline: '', deadlineLabel: '', eligibility: '',
-  url: '', notes: '', status: 'Contemplating', priority: 'Medium',
+  url: '', notionUrl: '', notes: '', status: 'Contemplating', priority: 'Medium',
 };
 
 export function EntryModal({ entry, categories, onSave, onClose }) {
@@ -21,6 +21,7 @@ export function EntryModal({ entry, categories, onSave, onClose }) {
           category: entry.category || '', pipeline: entry.pipeline || '',
           deadline: entry.deadline || '', deadlineLabel: entry.deadlineLabel || '',
           eligibility: entry.eligibility || '', url: entry.url || '',
+          notionUrl: entry.notionUrl || '',
           notes: entry.notes || '', status: entry.status || 'Contemplating',
           priority: entry.priority || 'Medium',
         }
@@ -52,6 +53,7 @@ export function EntryModal({ entry, categories, onSave, onClose }) {
       deadlineLabel: form.deadlineLabel.trim(),
       eligibility: form.eligibility.trim(),
       url: form.url.trim(),
+      notionUrl: form.notionUrl.trim(),
       notes: form.notes.trim(),
     });
     onClose();
@@ -174,6 +176,20 @@ export function EntryModal({ entry, categories, onSave, onClose }) {
               onChange={e => set('url', e.target.value)}
               placeholder="https://..."
             />
+          </div>
+        </div>
+
+        <div className={styles.row}>
+          <div className={`${styles.field} ${styles.wide}`}>
+            <label className={styles.label}>Notion page</label>
+            <input
+              type="url"
+              className={styles.input}
+              value={form.notionUrl}
+              onChange={e => set('notionUrl', e.target.value)}
+              placeholder="Paste embed link from Notion's Share menu"
+            />
+            <span className={styles.hint}>In Notion: Share → Copy embed link</span>
           </div>
         </div>
 

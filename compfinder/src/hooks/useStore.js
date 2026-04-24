@@ -4,17 +4,18 @@ import {
   persistEntries, persistCategories, saveFilters, saveFocusCollapsed,
   tryRestoreFromIDB,
 } from '../lib/store.js';
-import { cyclePastDeadlines, uid, STATUSES, TYPES, STATUS_MIGRATE, getFiltered } from '../lib/utils.js';
+import { cyclePastDeadlines, deduplicateEntries, uid, STATUSES, TYPES, STATUS_MIGRATE, getFiltered } from '../lib/utils.js';
 
 export function useStore() {
   const [entries, setEntries]       = useState(() => {
     const raw = loadEntries();
-    const { entries: cycled, changed } = cyclePastDeadlines(raw);
-    if (changed) {
+    const { entries: cycled, changed: cycleChanged } = cyclePastDeadlines(raw);
+    const { entries: deduped, removed } = deduplicateEntries(cycled);
+    if (cycleChanged || removed.length) {
       const cats = loadCategories();
-      persistEntries(cycled, cats);
+      persistEntries(deduped, cats);
     }
-    return cycled;
+    return deduped;
   });
 
   const [categories, setCategories] = useState(() => loadCategories());
@@ -23,7 +24,7 @@ export function useStore() {
   const [activeType, setActiveType]   = useState(savedFilters?.type || '__all__');
   const [activeCats, setActiveCats]   = useState(savedFilters?.cats || new Set(['__all__']));
   const [searchText, setSearchText]   = useState('');
-  const [sortKey, setSortKey]         = useState('deadline');
+  const [sortKey, setSortKey]         = useState('smart');
   const [sortDir, setSortDir]         = useState(1);
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [focusPanelCollapsed, setFocusPanelCollapsed] = useState(() => loadFocusCollapsed());
@@ -176,12 +177,19 @@ export function useStore() {
 
   const commitImport = useCallback((parsed, mode) => {
     let nextEntries;
+    let skipped = 0;
     if (mode === 'replace') {
-      nextEntries = parsed.entries;
+      const { entries: deduped } = deduplicateEntries(parsed.entries);
+      nextEntries = deduped;
     } else {
-      const existingIds = new Set(entries.map(e => e.id));
-      const toAdd = parsed.entries.filter(e => !existingIds.has(e.id));
-      nextEntries = [...entries, ...toAdd];
+      const existingIds   = new Set(entries.map(e => e.id));
+      const existingNames = new Set(entries.map(e => (e.name || '').toLowerCase().trim()));
+      const toAdd = parsed.entries.filter(e =>
+        !existingIds.has(e.id) && !existingNames.has((e.name || '').toLowerCase().trim())
+      );
+      skipped = parsed.entries.length - toAdd.length;
+      const { entries: deduped } = deduplicateEntries([...entries, ...toAdd]);
+      nextEntries = deduped;
     }
     let nextCats = [...categories];
     if (parsed.categories) {
@@ -193,6 +201,7 @@ export function useStore() {
     saveEntries(nextEntries);
     saveCategories(nextCats);
     setExpandedIds(new Set());
+    return { skipped };
   }, [entries, categories, saveEntries, saveCategories]);
 
   // Filtered + sorted view

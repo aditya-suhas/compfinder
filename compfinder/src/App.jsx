@@ -146,9 +146,12 @@ export default function App() {
         categories={categories}
         activeType={activeType}
         activeCats={activeCats}
+        sortKey={sortKey}
+        onSort={setSort}
         onTypeChange={setType}
         onCatToggle={toggleCat}
         onManageCats={openCats}
+        onAddEntry={openAdd}
       />
 
       <EntryTable
@@ -198,8 +201,9 @@ export default function App() {
       {modal?.type === 'import' && (
         <ImportModal
           onImport={(parsed, mode) => {
-            commitImport(parsed, mode);
-            addToast(`Imported ${parsed.entries.length} entries`);
+            const { skipped } = commitImport(parsed, mode);
+            const added = parsed.entries.length - skipped;
+            addToast(`Imported ${added} entr${added === 1 ? 'y' : 'ies'}${skipped ? `, ${skipped} duplicate${skipped > 1 ? 's' : ''} skipped` : ''}`);
           }}
           onClose={closeModal}
         />
@@ -209,8 +213,9 @@ export default function App() {
         <AIModal
           categories={categories}
           onImport={(parsed, mode) => {
-            commitImport(parsed, mode);
-            addToast(`Imported ${parsed.entries.length} entries via AI`);
+            const { skipped } = commitImport(parsed, mode);
+            const added = parsed.entries.length - skipped;
+            addToast(`Imported ${added} entr${added === 1 ? 'y' : 'ies'} via AI${skipped ? `, ${skipped} duplicate${skipped > 1 ? 's' : ''} skipped` : ''}`);
           }}
           onClose={closeModal}
         />

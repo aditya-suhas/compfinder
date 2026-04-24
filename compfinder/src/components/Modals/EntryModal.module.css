@@ -83,6 +83,12 @@
   font-family: var(--font-mono);
 }
 
+.hint {
+  font-size: 11px;
+  color: var(--text4);
+  font-family: var(--font-mono);
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;

@@ -148,6 +148,16 @@ export function AIModal({ categories, onImport, onClose }) {
   return (
     <ModalBase title="AI Import" onClose={onClose} width={620}>
       <div className={styles.content}>
+        <ol className={styles.steps}>
+          <li><strong>Fill in</strong> your list or profile in the tabs below</li>
+          <li><strong>Click</strong> "Copy prompt"</li>
+          <li>
+            <strong>Paste</strong> into Claude or ChatGPT and get the JSON response
+            {' '}<a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className={styles.openLink}>Open Claude →</a>
+          </li>
+          <li><strong>Paste</strong> the JSON response in the box below</li>
+        </ol>
+
         <div className={styles.tabs}>
           <button className={`${styles.tab} ${tab === 'format' ? styles.tabActive : ''}`} onClick={() => setTab('format')}>
             <Sparkles size={12} /> Format known list
@@ -230,7 +240,7 @@ export function AIModal({ categories, onImport, onClose }) {
         )}
 
         <div className={styles.divider}>
-          <span>Paste AI output below to import</span>
+          <span>Step 4 — Paste AI output here</span>
         </div>
 
         <textarea

@@ -51,9 +51,10 @@ export function drainPct(deadline) {
   return Math.min(100, (n / 365) * 100);
 }
 
-export const STATUSES = ['Contemplating', 'Committed', 'Doing', 'Done', 'Skipped'];
-export const TYPES    = ['Competition', 'Program', 'Fellowship', 'Other'];
-export const PRI      = { High: 0, Medium: 1, Low: 2 };
+export const STATUSES    = ['Contemplating', 'Committed', 'Doing', 'Done', 'Skipped'];
+export const TYPES       = ['Competition', 'Program', 'Fellowship', 'Other'];
+export const PRI         = { High: 0, Medium: 1, Low: 2 };
+export const STATUS_SORT = { Doing: 0, Committed: 1, Contemplating: 2, Done: 3, Skipped: 4 };
 
 export const STATUS_MIGRATE = {
   Aware: 'Contemplating',
@@ -62,7 +63,7 @@ export const STATUS_MIGRATE = {
   Applied: 'Doing',
 };
 
-/** Cycle any past deadlines forward by full years, reset status */
+/** Cycle any past deadlines forward by full years, but skip Done/Skipped entries */
 export function cyclePastDeadlines(entries) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   let changed = false;
@@ -70,6 +71,7 @@ export function cyclePastDeadlines(entries) {
     if (!e.deadline) return e;
     const d = new Date(e.deadline); d.setHours(0, 0, 0, 0);
     if (d >= today) return e;
+    if (e.status === 'Done' || e.status === 'Skipped') return e;
     const updated = { ...e, lastCycled: e.deadline };
     while (d < today) d.setFullYear(d.getFullYear() + 1);
     updated.deadline = d.toISOString().slice(0, 10);
@@ -78,6 +80,24 @@ export function cyclePastDeadlines(entries) {
     return updated;
   });
   return { entries: cycled, changed };
+}
+
+/** Deduplicate entries by name (case-insensitive), keeping first occurrence */
+export function deduplicateEntries(entries) {
+  const seen = new Set();
+  const deduped = [];
+  const removed = [];
+  for (const e of entries) {
+    const key = (e.name || '').toLowerCase().trim();
+    if (seen.has(key)) { removed.push(e); } else { seen.add(key); deduped.push(e); }
+  }
+  return { entries: deduped, removed };
+}
+
+function sortableDeadline(deadline) {
+  if (!deadline) return Infinity;
+  const t = new Date(deadline).getTime();
+  return t < Date.now() ? Number.MAX_SAFE_INTEGER - 1 : t;
 }
 
 /** Filter + sort entries */
@@ -97,9 +117,15 @@ export function getFiltered(entries, { activeType, activeCats, searchText, sortK
     );
   }
   return [...r].sort((a, b) => {
+    if (sortKey === 'smart') {
+      const sa = STATUS_SORT[a.status] ?? 2;
+      const sb = STATUS_SORT[b.status] ?? 2;
+      if (sa !== sb) return sa - sb;
+      return sortableDeadline(a.deadline) - sortableDeadline(b.deadline);
+    }
     if (sortKey === 'deadline') {
-      const av = a.deadline ? new Date(a.deadline).getTime() : Infinity;
-      const bv = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+      const av = sortableDeadline(a.deadline);
+      const bv = sortableDeadline(b.deadline);
       if (av === bv) return (PRI[a.priority] ?? 1) - (PRI[b.priority] ?? 1);
       return (av - bv) * sortDir;
     }

@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, RotateCcw, Plus, X, Check } from 'lucide-react';
+import { ExternalLink, RotateCcw, Plus, X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './ExpandedRow.module.css';
 
 export function ExpandedRow({ entry, onToggleCheck, onDeleteCheck, onAddCheck }) {
   const [newTask, setNewTask] = useState('');
+  const [showEmbed, setShowEmbed] = useState(false);
   const inputRef = useRef(null);
 
   const checklist = entry.checklist || [];
@@ -56,6 +57,37 @@ export function ExpandedRow({ entry, onToggleCheck, onDeleteCheck, onAddCheck })
             <span className={styles.cycled}>
               <RotateCcw size={11} /> {entry.lastCycled}
             </span>
+          </div>
+        )}
+
+        {entry.notionUrl && (
+          <div className={styles.section}>
+            <h4 className={styles.sectionTitle}>Notion</h4>
+            <div className={styles.notionRow}>
+              <a
+                href={entry.notionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.url}
+              >
+                Open in Notion <ExternalLink size={11} />
+              </a>
+              <button
+                className={styles.embedToggle}
+                onClick={() => setShowEmbed(v => !v)}
+              >
+                {showEmbed ? <><ChevronUp size={11} /> Hide embed</> : <><ChevronDown size={11} /> Show embed</>}
+              </button>
+            </div>
+            {showEmbed && (
+              <iframe
+                src={entry.notionUrl}
+                className={styles.notionEmbed}
+                title="Notion page"
+                frameBorder="0"
+                allowFullScreen
+              />
+            )}
           </div>
         )}
 

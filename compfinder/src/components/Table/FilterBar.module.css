@@ -6,12 +6,51 @@
   animation: fadeUp 300ms var(--ease) 150ms both;
 }
 
+/* Type tabs row */
+.typeTabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-bottom: 1px;
+}
+
+.smartSort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text3);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  white-space: nowrap;
+}
+.smartSort:hover { border-color: var(--border-strong); color: var(--text2); }
+.smartSortActive {
+  background: var(--accent-light);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+}
+
 /* Type tabs */
 .typeTabs {
   display: flex;
   align-items: center;
   gap: 2px;
-  border-bottom: 1px solid var(--border);
   padding-bottom: 0;
 }
 
