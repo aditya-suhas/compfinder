@@ -63,7 +63,7 @@ export const STATUS_MIGRATE = {
   Applied: 'Doing',
 };
 
-/** Cycle any past deadlines forward by full years, but skip Done/Skipped entries */
+/** Cycle any past deadlines forward by full years. Preserves status for Done/Skipped entries. */
 export function cyclePastDeadlines(entries) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   let changed = false;
@@ -71,11 +71,10 @@ export function cyclePastDeadlines(entries) {
     if (!e.deadline) return e;
     const d = new Date(e.deadline); d.setHours(0, 0, 0, 0);
     if (d >= today) return e;
-    if (e.status === 'Done' || e.status === 'Skipped') return e;
     const updated = { ...e, lastCycled: e.deadline };
     while (d < today) d.setFullYear(d.getFullYear() + 1);
     updated.deadline = d.toISOString().slice(0, 10);
-    updated.status   = 'Contemplating';
+    if (e.status !== 'Done' && e.status !== 'Skipped') updated.status = 'Contemplating';
     changed = true;
     return updated;
   });
